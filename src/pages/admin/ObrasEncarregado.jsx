@@ -31,11 +31,9 @@ CARREGAR OBRAS DO ENCARREGADO
 */
 
   useEffect(() => {
-
     if (
       encarregado?.id
     ) {
-
       carregarObras();
 
     }

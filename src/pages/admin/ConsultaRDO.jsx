@@ -375,7 +375,7 @@ function ConsultaRDO( {
             <button
               className="btn btn-ghost"
               onClick={() =>
-              navegar("obras-encarregado")
+              navegar("home")
               }
               >
               ← Voltar

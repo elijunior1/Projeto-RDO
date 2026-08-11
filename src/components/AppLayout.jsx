@@ -100,7 +100,7 @@ function AppLayout( {
 
             <button
               onClick={() => {
-                navegar("selecionar-obra-rdo");
+                navegar("selecionar-rdo");
                 setMenuAberto(false);
               }}
               >

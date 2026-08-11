@@ -4,10 +4,6 @@
   gap: 24px;
 }
 
-/* =====================================
-   BUSCA
-===================================== */
-
 .home-encarregado .form-group {
   margin-bottom: 20px;
 }
@@ -16,10 +12,6 @@
   width: 100%;
   max-width: 450px;
 }
-
-/* =====================================
-   CARDS DAS OBRAS
-===================================== */
 
 .home-obra-card {
   display: flex;
@@ -59,27 +51,15 @@
   padding-top: 12px;
 }
 
-/* =====================================
-   BADGES
-===================================== */
-
 .badge-warning {
   background: #f59e0b;
   color: #fff;
 }
 
-/* =====================================
-   BOTÃO RDO ENVIADA
-===================================== */
-
 .btn-rdo-enviada {
   width: 100%;
   cursor: default;
 }
-
-/* =====================================
-   RESPONSIVO
-===================================== */
 
 @media (max-width: 768px) {
 
@@ -313,9 +293,9 @@
 
 .encarregado-banner {
   background: linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
+  135deg,
+  #2563eb,
+  #1d4ed8
   );
   color: white;
   border-radius: 18px;

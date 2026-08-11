@@ -29,7 +29,7 @@ function SelecionarObraRDO( {
         <div>
           <button
             className="btn btn-ghost"
-            onClick={() => navegar("home-admin")}
+            onClick={() => navegar("home")}
             >
             ← Voltar
           </button>

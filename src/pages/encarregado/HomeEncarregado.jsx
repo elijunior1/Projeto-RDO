@@ -438,13 +438,12 @@ function HomeEncarregado( {
                     )}
                   </div>
                 </article>
+                
               );
-
             }
           )}
 
         </div>
-
       )}
 
     </section>

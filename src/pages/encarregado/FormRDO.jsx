@@ -1237,17 +1237,17 @@ ENVIAR RDO
 
 
       alert(
-
         "RDO enviada com sucesso!"
-
       );
 
+      if (typeof setRdos === "function") {
+        setRdos(prev => [
+          ...(prev || []),
+          novaRDO
+        ]);
+      }
 
-      navegar(
-
-        "home"
-
-      );
+      navegar("home");
 
 
     } catch (

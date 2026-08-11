@@ -1,0 +1,349 @@
+.home-encarregado {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* =====================================
+   BUSCA
+===================================== */
+
+.home-encarregado .form-group {
+  margin-bottom: 20px;
+}
+
+.home-encarregado .form-group input {
+  width: 100%;
+  max-width: 450px;
+}
+
+/* =====================================
+   CARDS DAS OBRAS
+===================================== */
+
+.home-obra-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-obra-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.home-obra-header h3 {
+  margin: 0;
+}
+
+.home-obra-endereco {
+  color: var(--text-secondary);
+}
+
+.home-obra-periodo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-obra-equipe {
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.04);
+}
+
+.home-obra-actions {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+/* =====================================
+   BADGES
+===================================== */
+
+.badge-warning {
+  background: #f59e0b;
+  color: #fff;
+}
+
+/* =====================================
+   BOTÃO RDO ENVIADA
+===================================== */
+
+.btn-rdo-enviada {
+  width: 100%;
+  cursor: default;
+}
+
+/* =====================================
+   RESPONSIVO
+===================================== */
+
+@media (max-width: 768px) {
+
+  .home-obra-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .home-encarregado .form-group input {
+    max-width: 100%;
+  }
+
+}
+
+.encarregado-banner {
+  background: linear-gradient(
+  135deg,
+  #2563eb,
+  #1d4ed8
+  );
+
+  color: white;
+
+  padding: 24px;
+
+  border-radius: 16px;
+
+  margin-bottom: 24px;
+}
+
+.encarregado-banner h2 {
+  margin: 0 0 8px;
+}
+
+.encarregado-banner p {
+  margin: 0;
+  opacity: .9;
+}
+
+.progresso-dia {
+  margin-top: 20px;
+}
+
+.progresso-barra {
+  width: 100%;
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progresso-preenchido {
+  height: 100%;
+  background: linear-gradient(
+  90deg,
+  #2563eb,
+  #3b82f6
+  );
+}
+
+.obra-card {
+  border-left: 5px solid #2563eb;
+  border-radius: 16px;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  transition: .2s;
+}
+
+.obra-card:hover {
+  transform: translateY(-2px);
+}
+
+.obra-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.obra-card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.obra-card-header small {
+  color: #64748b;
+}
+
+.obra-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.obra-info p {
+  margin: 0;
+  color: #334155;
+}
+
+.status-pendente {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+.status-enviado {
+  background: #dcfce7;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+.card-actions {
+  margin-top: 20px;
+}
+
+.card-actions button {
+  width: 100%;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.dashboard-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.dashboard-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.dashboard-card h3 {
+  margin: 0;
+  color: #64748b;
+  font-size: .9rem;
+}
+
+.progresso-dia {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.progresso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progresso-header span {
+  font-weight: 600;
+  color: #475569;
+}
+
+.progresso-header strong {
+  color: #2563eb;
+  font-size: 1rem;
+}
+
+.progresso-barra {
+  width: 100%;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progresso-preenchido {
+  height: 100%;
+  background: linear-gradient(
+  90deg,
+  #2563eb,
+  #3b82f6
+  );
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+
+.busca-obras {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.busca-icone {
+  font-size: 1.2rem;
+}
+
+.busca-obras input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.busca-obras input::placeholder {
+  color: #94a3b8;
+}
+
+.encarregado-banner {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+  color: white;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 20px rgba(37,99,235,.25);
+}
+
+.encarregado-banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.encarregado-banner h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.encarregado-banner p {
+  margin: 8px 0 4px;
+  opacity: .95;
+}
+
+.encarregado-banner small {
+  opacity: .8;
+}
+
+.encarregado-banner-icon {
+  font-size: 3rem;
+}

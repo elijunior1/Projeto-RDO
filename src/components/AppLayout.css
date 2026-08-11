@@ -1,0 +1,179 @@
+.app-layout {
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  height: 70px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  box-shadow:
+  0 2px 10px #0001;
+}
+
+.app-logo h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #1e293b;
+}
+
+.app-logo span {
+  color: #2563eb;
+}
+
+.app-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: 250px;
+}
+
+.app-user span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-user button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+}
+
+.app-body {
+  display: block;
+  min-height:
+  calc(100vh - 70px);
+}
+
+.app-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: fixed;
+  top: 72px;
+  left: -240px;
+  width: 220px;
+  height: calc(100vh - 72px);
+  background: #1e293b;
+  padding: 20px;
+  transition: .3s;
+  z-index: 1000;
+}
+
+.app-menu.aberto {
+  left: 0;
+}
+
+.app-menu button {
+  height: 45px;
+  border: none;
+  border-radius: 10px;
+  background: #334155;
+  color: white;
+  text-align: left;
+  padding: 0 15px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.app-menu button:hover {
+  background: #2563eb;
+}
+
+.app-content {
+  width: 100%;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.menu-title {
+  color: #94a3b8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.app-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  background: #334155;
+  color: white;
+  text-align: left;
+  padding: 0 15px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.app-menu button:hover {
+  transform: translateX(4px);
+}
+
+.card-dashboard {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow:
+  0 4px 12px rgba(0,0,0,.05);
+  border-left: 6px solid #2563eb;
+}
+
+.card-dashboard strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 42px;
+  color: #1e293b;
+}
+
+.menu-toggle {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: #1e293b;
+  margin-right: 15px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.4);
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+
+  .app-content {
+    padding: 15px;
+  }
+
+  .app-header {
+    padding: 0 15px;
+  }
+
+  .app-user span {
+    display: none;
+  }
+}

@@ -1,0 +1,154 @@
+#rdo-pdf {
+  width: 1120px;
+  min-height: 790px;
+  background: #fff;
+  color: #000;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.pdf-topo {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.pdf-logo {
+  width: 120px;
+  height: 120px;
+  border: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.pdf-info {
+  flex: 1;
+}
+
+.linha {
+  border: 1px solid #000;
+  padding: 8px;
+  display: flex;
+  gap: 10px;
+}
+
+.linha span {
+  min-width: 120px;
+  font-weight: bold;
+}
+
+.pdf-rdo {
+  width: 180px;
+}
+
+.pdf-rdo div {
+  border: 1px solid #000;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.pdf-rdo span {
+  display: block;
+  font-size: 12px;
+}
+
+.pdf-rdo strong {
+  font-size: 16px;
+}
+
+.pdf-meio {
+  display: flex;
+  gap: 20px;
+}
+
+.pdf-box {
+  flex: 1;
+  border: 1px solid #000;
+}
+
+.titulo-box {
+  background: #3567f0;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+}
+
+.pdf-box table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pdf-box th {
+  background: #ffd400;
+}
+
+.pdf-box th,
+.pdf-box td {
+  border: 1px solid #000;
+  padding: 6px;
+  font-size: 12px;
+}
+
+.total-efetivo {
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.observacoes {
+  margin-top: 20px;
+}
+
+.texto-observacao {
+  min-height: 150px;
+  padding: 15px;
+  white-space: pre-wrap;
+}
+
+.tabela-efetivo {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tabela-efetivo th,
+.tabela-efetivo td {
+  border: 1px solid #000;
+  padding: 4px;
+  font-size: 11px;
+}
+
+.tabela-efetivo th {
+  background: #ffd500;
+}
+
+.tabela-efetivo th:nth-child(1),
+.tabela-efetivo th:nth-child(3) {
+  width: 40%;
+}
+
+.tabela-efetivo th:nth-child(2),
+.tabela-efetivo th:nth-child(4) {
+  width: 10%;
+  text-align: center;
+}
+
+.tabela-efetivo td:nth-child(2),
+.tabela-efetivo td:nth-child(4) {
+  text-align: center;
+}
+
+.pdf-logo img {
+  max-width: 120px;
+  max-height: 120px;
+}
+
+.sem-dados {
+  padding: 12px;
+  text-align: center;
+  color: #666;
+}

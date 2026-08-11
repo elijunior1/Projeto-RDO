@@ -1,0 +1,107 @@
+import "./AppLayout.css";
+
+function AppLayout( {
+  usuario,
+  navegar,
+  sair,
+  children
+}
+
+) {
+
+  return (
+  <div className="app-layout">
+  <header className="app-header">
+  <div className="app-logo">
+  <h1>
+  RDO
+  <span>
+  Gestão
+  </span>
+  </h1>
+
+  </div>
+
+  <div className="app-user">
+
+  <span>
+  {
+    usuario?.nome
+  }
+  </span>
+
+  <button
+  onClick= {
+    sair
+  }
+  >
+  Sair
+  </button>
+
+  </div>
+
+  </header>
+
+  <div className="app-body">
+
+  <aside className="app-menu">
+
+  <button
+  onClick= {
+    () =>
+    navegar("home-admin")
+  }
+  >
+  🏠
+  Início
+  </button>
+
+  <button
+  onClick= {
+    () =>
+    navegar("gerenciar-obras")
+  }
+  >
+  🏗
+  Obras
+  </button>
+
+  <button
+  onClick= {
+    () =>
+    navegar("gerenciar-colaboradores")
+  }
+  >
+  👷
+  Colaboradores
+  </button>
+
+  <button
+  onClick= {
+    () =>
+    navegar("consulta-rdo")
+  }
+  >
+  📋
+  RDOs
+  </button>
+
+  </aside>
+
+  <main className="app-content">
+
+  {
+    children
+  }
+
+  </main>
+
+  </div>
+
+  </div>
+
+  );
+
+}
+
+export default AppLayout;

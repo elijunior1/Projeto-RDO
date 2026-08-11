@@ -196,126 +196,196 @@ function HomeAdmin( {
     );
   }
 
+  function obterSaudacao() {
+
+    const hora = new Date().getHours();
+
+    if (hora < 12) {
+      return "Bom dia";
+    }
+
+    if (hora < 18) {
+      return "Boa tarde";
+    }
+
+    return "Boa noite";
+
+  }
+
   return (
-    <main className="admin-container">
-      <section className="dashboard-grid">
-        <div className="card-dashboard">
-          <span>
-            Obras em andamento
-          </span>
-          <strong>
-            {obrasEmAndamento}
-          </strong>
-        </div>
-        <div className="card-dashboard">
-          <span>
-            Obras pausadas
-          </span>
-          <strong>
-            {obrasPausadas}
-          </strong>
-        </div>
-        <div className="card-dashboard">
-          <span>
-            RDOs enviadas hoje
-          </span>
-          <strong>
-            {rdosHoje}
-          </strong>
-        </div>
-        <div className="card-dashboard">
-          <span>
-            RDOs pendentes
-          </span>
-          <strong>
-            0
-          </strong>
-        </div>
-      </section>
-      <section className="acoes">
-        <h2>
-          Ações rápidas
-        </h2>
-        <div className="acoes-grid">
-          <button
-            onClick={() =>
-            navegar(
-              "gerenciar-obras"
-            )
-            }
-            >
-            🏗
-            <span>
-              Gerenciar Obras
-            </span>
-          </button>
+    <>
+      <div className="admin-banner">
 
-          <button
-            onClick={() =>
-            navegar(
-              "gerenciar-colaboradores"
-            )
-            }
-            >
-            👷
-            <span>
-              Colaboradores
-            </span>
-          </button>
+        <div className="admin-banner-content">
 
-          <button
-            onClick={() =>
-            navegar(
-              "selecionar-rdo"
-            )
-            }
-            >
-            📋
-            <span>
-              Consultar RDO
-            </span>
-          </button>
+          <div>
+
+            <h2>
+              👋 {obterSaudacao()}, {usuario.nome}
+            </h2>
+
+            <p>
+              Bem-vindo ao painel administrativo do RDO Gestão.
+            </p>
+
+            <small>
+              Acompanhe obras, colaboradores e relatórios em tempo real.
+            </small>
+
+          </div>
+
+          <div className="admin-banner-icon">
+            📊
+          </div>
+
         </div>
-      </section>
-      <section className="encarregados">
-        <h2>
-          Encarregados
-        </h2>
-        <div className="encarregados-grid">
-          {
-          encarregados.map(
-            encarregado => (
-              <article
-                className="card-encarregado"
-                key={
-                encarregado.id
-                }
-                >
-                <h3>
-                  {encarregado.nome}
-                </h3>
-                <p>
-                  Obras:
-                  {
-                  encarregado.obrasAtribuidas
-                  }
-                </p>
-                <button
-                  onClick={() =>
-                  abrirObrasDoEncarregado(
-                    encarregado
-                  )
+
+      </div>
+      <main className="admin-container">
+        <section className="dashboard-grid">
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">
+              🏗
+            </div>
+
+            <span className="dashboard-label">
+              Obras em andamento
+            </span>
+
+            <div className="dashboard-number">
+              {obrasEmAndamento}
+            </div>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">
+              ⏸️
+            </div>
+
+            <span className="dashboard-label">
+              Obras pausadas
+            </span>
+
+            <div className="dashboard-number">
+              {obrasPausadas}
+            </div>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">
+              📋
+            </div>
+
+            <span className="dashboard-label">
+              RDOs hoje
+            </span>
+
+            <div className="dashboard-number">
+              {rdosHoje}
+            </div>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">
+              👷
+            </div>
+
+            <span className="dashboard-label">
+              Encarregados
+            </span>
+
+            <div className="dashboard-number">
+              {encarregados.length}
+            </div>
+          </div>
+
+        </section>
+        <section className="acoes">
+          <h2>
+            Ações rápidas
+          </h2>
+          <div className="acoes-grid">
+            <button
+              onClick={() =>
+              navegar(
+                "gerenciar-obras"
+              )
+              }
+              >
+              🏗
+              <span>
+                Gerenciar Obras
+              </span>
+            </button>
+
+            <button
+              onClick={() =>
+              navegar(
+                "gerenciar-colaboradores"
+              )
+              }
+              >
+              👷
+              <span>
+                Colaboradores
+              </span>
+            </button>
+
+            <button
+              onClick={() =>
+              navegar(
+                "selecionar-rdo"
+              )
+              }
+              >
+              📋
+              <span>
+                Consultar RDO
+              </span>
+            </button>
+          </div>
+        </section>
+        <section className="encarregados">
+          <h2>
+            Encarregados
+          </h2>
+          <div className="encarregados-grid">
+            {
+            encarregados.map(
+              encarregado => (
+                <article
+                  className="card-encarregado"
+                  key={
+                  encarregado.id
                   }
                   >
-                  Ver obras
-                </button>
-              </article>
+                  <h3>
+                    {encarregado.nome}
+                  </h3>
+                  <p>
+                    Obras:
+                    {
+                    encarregado.obrasAtribuidas
+                    }
+                  </p>
+                  <button
+                    onClick={() =>
+                    abrirObrasDoEncarregado(
+                      encarregado
+                    )
+                    }
+                    >
+                    Ver obras
+                  </button>
+                </article>
+              )
             )
-          )
-          }
-        </div>
-      </section>
-    </main>
+            }
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
 

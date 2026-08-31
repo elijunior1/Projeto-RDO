@@ -7,27 +7,22 @@ import {
   supabase
 } from "../../supabase.js";
 
-function FormRDO( {
+import "./FormRDO.css";
+
+function FormRDO({
   usuario,
-
   obra,
-
   colaboradores,
-
   equipes,
-
   rdos,
-
   setRdos,
-
   navegar,
-
+  voltar,
   sair,
-
 }) {
 
-  const [materiais,
-    setMateriais] = useState([]);
+  const [ materiais,
+    setMateriais ] = useState([]);
 
   const [
     colaboradoresDaObra,
@@ -62,21 +57,21 @@ function FormRDO( {
 
     setProducao
 
-  ] = useState( {
+  ] = useState({
 
-      escavacao: 0,
+    escavacao: 0,
 
-      concretagem: 0,
+    concretagem: 0,
 
-      acabamento: 0,
+    acabamento: 0,
 
-      instalacaoModulo: 0,
+    instalacaoModulo: 0,
 
-      instalacaoTerca: 0,
+    instalacaoTerca: 0,
 
-      instalacaoTelha: 0,
+    instalacaoTelha: 0,
 
-    });
+  });
 
   const [
     motivosBaixaProdutividade,
@@ -92,61 +87,199 @@ function FormRDO( {
 
   ] = useState("");
 
-  const motivosDisponiveis = [{
+  const chaveRascunho = obra?.id
+    ? `rdo_rascunho_${obra.id}_${usuario?.id}`
+    : null;
+
+  useEffect(() => {
+
+    if (!chaveRascunho) {
+      return;
+    }
+
+    try {
+
+      const rascunhoSalvo =
+        localStorage.getItem(
+          chaveRascunho
+        );
+
+      if (!rascunhoSalvo) {
+        return;
+      }
+
+      const rascunho =
+        JSON.parse(
+          rascunhoSalvo
+        );
+
+      if (rascunho.materiais) {
+
+        setMateriais(
+          rascunho.materiais
+        );
+
+      }
+
+      if (rascunho.efetivo) {
+
+        setEfetivo(
+          rascunho.efetivo
+        );
+
+      }
+
+      if (rascunho.producao) {
+
+        setProducao(
+          rascunho.producao
+        );
+
+      }
+
+      if (
+        rascunho.motivosBaixaProdutividade
+      ) {
+
+        setMotivosBaixaProdutividade(
+          rascunho.motivosBaixaProdutividade
+        );
+
+      }
+
+      if (
+        typeof rascunho.detalhamentoBaixaProdutividade ===
+        "string"
+      ) {
+
+        setDetalhamentoBaixaProdutividade(
+          rascunho.detalhamentoBaixaProdutividade
+        );
+
+      }
+
+      console.log(
+        "Rascunho do RDO restaurado."
+      );
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao restaurar rascunho do RDO:",
+        erro
+      );
+
+    }
+
+  }, [
+    chaveRascunho
+  ]);
+
+  useEffect(() => {
+
+    if (!chaveRascunho) {
+      return;
+    }
+
+    const rascunho = {
+
+      materiais,
+
+      efetivo,
+
+      producao,
+
+      motivosBaixaProdutividade,
+
+      detalhamentoBaixaProdutividade,
+
+      atualizadoEm:
+        new Date().toISOString()
+
+    };
+
+    try {
+
+      localStorage.setItem(
+        chaveRascunho,
+        JSON.stringify(
+          rascunho
+        )
+      );
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao salvar rascunho do RDO:",
+        erro
+      );
+
+    }
+
+  }, [
+    chaveRascunho,
+    materiais,
+    efetivo,
+    producao,
+    motivosBaixaProdutividade,
+    detalhamentoBaixaProdutividade
+  ]);
+
+  const motivosDisponiveis = [ {
     id: "chuva",
 
     nome: "Chuva",
 
   },
 
-    {
-      id: "falta_equipamento",
+  {
+    id: "falta_equipamento",
 
-      nome: "Falta de equipamento",
+    nome: "Falta de equipamento",
 
-    },
+  },
 
-    {
-      id: "falta_material",
+  {
+    id: "falta_material",
 
-      nome: "Falta de material",
+    nome: "Falta de material",
 
-    },
+  },
 
-    {
-      id: "falta_mao_de_obra",
+  {
+    id: "falta_mao_de_obra",
 
-      nome: "Falta de mão de obra",
+    nome: "Falta de mão de obra",
 
-    },
+  },
 
-    {
-      id: "condicoes_climaticas",
+  {
+    id: "condicoes_climaticas",
 
-      nome: "Condições climáticas",
+    nome: "Condições climáticas",
 
-    },
+  },
 
-    {
-      id: "interferencia_terceiros",
+  {
+    id: "interferencia_terceiros",
 
-      nome: "Interferência de terceiros",
+    nome: "Interferência de terceiros",
 
-    },
+  },
 
-    {
-      id: "retrabalho",
+  {
+    id: "retrabalho",
 
-      nome: "Retrabalho",
+    nome: "Retrabalho",
 
-    },
+  },
 
-    {
-      id: "outros",
+  {
+    id: "outros",
 
-      nome: "Outros",
+    nome: "Outros",
 
-    },
+  },
 
   ];
 
@@ -159,29 +292,29 @@ DATA DE HOJE
   function obterDataHoje() {
 
     const hoje =
-    new Date();
+      new Date();
 
 
     const ano =
-    hoje.getFullYear();
+      hoje.getFullYear();
 
 
     const mes =
-    String(
-      hoje.getMonth() + 1
-    ).padStart(
-      2,
-      "0"
-    );
+      String(
+        hoje.getMonth() + 1
+      ).padStart(
+        2,
+        "0"
+      );
 
 
     const dia =
-    String(
-      hoje.getDate()
-    ).padStart(
-      2,
-      "0"
-    );
+      String(
+        hoje.getDate()
+      ).padStart(
+        2,
+        "0"
+      );
 
 
     return `${ano}-${mes}-${dia}`;
@@ -212,7 +345,7 @@ CARREGAR COLABORADORES DA OBRA
     carregarColaboradoresDaObra();
 
   },
-    [obra]);
+    [ obra ]);
 
   async function carregarColaboradoresDaObra() {
 
@@ -222,7 +355,7 @@ CARREGAR COLABORADORES DA OBRA
 
 
       const colaboradoresIds =
-      new Set();
+        new Set();
 
 
       /*
@@ -239,19 +372,19 @@ CARREGAR COLABORADORES DA OBRA
 
       } = await supabase
 
-      .from(
-        "rdo_obra_colaboradores"
-      )
+        .from(
+          "rdo_obra_colaboradores"
+        )
 
-      .select(
-        "colaborador_id"
-      )
+        .select(
+          "colaborador_id"
+        )
 
-      .eq(
-        "obra_id",
+        .eq(
+          "obra_id",
 
-        obra.id
-      );
+          obra.id
+        );
 
 
       if (
@@ -292,19 +425,19 @@ CARREGAR COLABORADORES DA OBRA
 
         } = await supabase
 
-        .from(
-          "rdo_equipe_colaboradores"
-        )
+          .from(
+            "rdo_equipe_colaboradores"
+          )
 
-        .select(
-          "colaborador_id"
-        )
+          .select(
+            "colaborador_id"
+          )
 
-        .eq(
-          "equipe_id",
+          .eq(
+            "equipe_id",
 
-          obra.equipe_id
-        );
+            obra.equipe_id
+          );
 
 
         if (
@@ -357,35 +490,35 @@ CARREGAR COLABORADORES DA OBRA
 
       } = await supabase
 
-      .from(
-        "rdo_colaboradores"
-      )
-
-      .select(
-        "id, nome, tipo"
-      )
-
-      .in(
-        "id",
-
-        Array.from(
-          colaboradoresIds
+        .from(
+          "rdo_colaboradores"
         )
-      )
 
-      .eq(
-        "ativo",
+        .select(
+          "id, nome, tipo"
+        )
 
-        true
-      )
+        .in(
+          "id",
 
-      .order(
-        "nome",
+          Array.from(
+            colaboradoresIds
+          )
+        )
 
-        {
-          ascending: true
-        }
-      );
+        .eq(
+          "ativo",
+
+          true
+        )
+
+        .order(
+          "nome",
+
+          {
+            ascending: true
+          }
+        );
 
 
       if (
@@ -412,13 +545,13 @@ CARREGAR COLABORADORES DA OBRA
           colaborador => ({
 
             colaboradorId:
-            colaborador.id,
+              colaborador.id,
 
             nome:
-            colaborador.nome,
+              colaborador.nome,
 
             presenca:
-            "presente",
+              "presente",
 
           })
         )
@@ -427,7 +560,7 @@ CARREGAR COLABORADORES DA OBRA
 
 
     } catch (
-      erro
+    erro
     ) {
 
       console.error(
@@ -474,22 +607,22 @@ ALTERAR PRESENÇA
 
       efetivoAtual =>
 
-      efetivoAtual.map(
+        efetivoAtual.map(
 
-        colaborador =>
+          colaborador =>
 
-        colaborador.colaboradorId ===
-        colaboradorId
+            colaborador.colaboradorId ===
+              colaboradorId
 
-        ? {
+              ? {
 
-          ...colaborador,
+                ...colaborador,
 
-          presenca,
+                presenca,
 
-        }: colaborador
+              } : colaborador
 
-      )
+        )
 
     );
 
@@ -515,11 +648,11 @@ ALTERAR PRODUÇÃO
 
         ...producaoAtual,
 
-        [atividade]:
+        [ atividade ]:
 
-        Number(
-          quantidade
-        ),
+          Number(
+            quantidade
+          ),
 
       })
 
@@ -555,8 +688,8 @@ ALTERNAR MOTIVO
 
             motivo =>
 
-            motivo !==
-            motivoId
+              motivo !==
+              motivoId
 
           );
 
@@ -654,7 +787,7 @@ ENVIAR RDO
 
 
       const dataHoje =
-      obterDataHoje();
+        obterDataHoje();
 
 
       console.log(
@@ -696,27 +829,27 @@ ENVIAR RDO
 
       } = await supabase
 
-      .from(
-        "rdos"
-      )
+        .from(
+          "rdos"
+        )
 
-      .select(
-        "id"
-      )
+        .select(
+          "id"
+        )
 
-      .eq(
-        "obra_id",
+        .eq(
+          "obra_id",
 
-        obra.id
-      )
+          obra.id
+        )
 
-      .eq(
-        "data",
+        .eq(
+          "data",
 
-        dataHoje
-      )
+          dataHoje
+        )
 
-      .maybeSingle();
+        .maybeSingle();
 
 
       if (
@@ -769,45 +902,51 @@ ENVIAR RDO
   */
 
       const {
-
         data: novaRDO,
-
         error: rdoError
-
       } = await supabase
+        .from(
+          "rdos"
+        )
+        .insert([ {
 
-      .from(
-        "rdos"
-      )
+          obra_id:
+            obra.id,
 
-      .insert([{
+          encarregado_id:
+            usuario.id,
 
-        obra_id:
+          encarregado_nome:
+            usuario.nome || null,
 
-        obra.id,
+          equipe_id:
+            obra.equipe_id || null,
 
+          equipe_nome:
+            obra.equipe?.nome || null,
 
-        encarregado_id:
+          data:
+            dataHoje,
 
-        usuario.id,
+          observacoes:
+            detalhamentoBaixaProdutividade.trim() ||
+            null,
 
+        } ])
 
-        data:
+        .select(`
+  id,
+  codigo,
+  obra_id,
+  encarregado_id,
+  encarregado_nome,
+  equipe_id,
+  equipe_nome,
+  data,
+  observacoes,
+  created_at`)
 
-        dataHoje,
-
-
-        observacoes:
-
-        detalhamentoBaixaProdutividade.trim() ||
-
-        null,
-
-      }])
-
-      .select()
-
-      .single();
+        .single();
 
 
       if (
@@ -830,11 +969,13 @@ ENVIAR RDO
 
 
       console.log(
-
         "RDO CRIADA:",
-
         novaRDO
+      );
 
+      console.log(
+        "CÓDIGO DA RDO:",
+        novaRDO.codigo
       );
 
 
@@ -844,114 +985,114 @@ ENVIAR RDO
   ========================================
   */
 
-      const producaoParaSalvar = [{
+      const producaoParaSalvar = [ {
 
         atividade:
 
-        "escavacao",
+          "escavacao",
 
         quantidade:
 
-        producao.escavacao,
+          producao.escavacao,
 
       },
 
 
-        {
+      {
 
-          atividade:
+        atividade:
 
           "concretagem",
 
-          quantidade:
+        quantidade:
 
           producao.concretagem,
 
-        },
+      },
 
 
-        {
+      {
 
-          atividade:
+        atividade:
 
           "acabamento",
 
-          quantidade:
+        quantidade:
 
           producao.acabamento,
 
-        },
+      },
 
 
-        {
+      {
 
-          atividade:
+        atividade:
 
           "instalacao_modulo",
 
-          quantidade:
+        quantidade:
 
           producao.instalacaoModulo,
 
-        },
+      },
 
 
-        {
+      {
 
-          atividade:
+        atividade:
 
           "instalacao_terca",
 
-          quantidade:
+        quantidade:
 
           producao.instalacaoTerca,
 
-        },
+      },
 
 
-        {
+      {
 
-          atividade:
+        atividade:
 
           "instalacao_telha",
 
-          quantidade:
+        quantidade:
 
           producao.instalacaoTelha,
 
-        },
+      },
 
       ]
 
-      .filter(
+        .filter(
 
-        item =>
+          item =>
 
-        item.quantidade >
+            item.quantidade >
 
-        0
+            0
 
-      )
+        )
 
-      .map(
+        .map(
 
-        item => ({
+          item => ({
 
-          rdo_id:
+            rdo_id:
 
-          novaRDO.id,
+              novaRDO.id,
 
-          atividade:
+            atividade:
 
-          item.atividade,
+              item.atividade,
 
-          quantidade:
+            quantidade:
 
-          item.quantidade,
+              item.quantidade,
 
-        })
+          })
 
-      );
+        );
 
 
       if (
@@ -968,17 +1109,17 @@ ENVIAR RDO
 
         } = await supabase
 
-        .from(
+          .from(
 
-          "rdo_producao"
+            "rdo_producao"
 
-        )
+          )
 
-        .insert(
+          .insert(
 
-          producaoParaSalvar
+            producaoParaSalvar
 
-        );
+          );
 
 
         if (
@@ -1017,25 +1158,25 @@ ENVIAR RDO
 
       const efetivoParaSalvar =
 
-      efetivo.map(
+        efetivo.map(
 
-        colaborador => ({
+          colaborador => ({
 
-          rdo_id:
+            rdo_id:
 
-          novaRDO.id,
+              novaRDO.id,
 
-          colaborador_id:
+            colaborador_id:
 
-          colaborador.colaboradorId,
+              colaborador.colaboradorId,
 
-          presenca:
+            presenca:
 
-          colaborador.presenca,
+              colaborador.presenca,
 
-        })
+          })
 
-      );
+        );
 
 
       if (
@@ -1052,17 +1193,17 @@ ENVIAR RDO
 
         } = await supabase
 
-        .from(
+          .from(
 
-          "rdo_efetivo"
+            "rdo_efetivo"
 
-        )
+          )
 
-        .insert(
+          .insert(
 
-          efetivoParaSalvar
+            efetivoParaSalvar
 
-        );
+          );
 
 
         if (
@@ -1101,21 +1242,21 @@ ENVIAR RDO
 
       const motivosParaSalvar =
 
-      motivosBaixaProdutividade.map(
+        motivosBaixaProdutividade.map(
 
-        motivo => ({
+          motivo => ({
 
-          rdo_id:
+            rdo_id:
 
-          novaRDO.id,
+              novaRDO.id,
 
-          motivo:
+            motivo:
 
-          motivo,
+              motivo,
 
-        })
+          })
 
-      );
+        );
 
 
       if (
@@ -1132,17 +1273,17 @@ ENVIAR RDO
 
         } = await supabase
 
-        .from(
+          .from(
 
-          "rdo_motivos"
+            "rdo_motivos"
 
-        )
+          )
 
-        .insert(
+          .insert(
 
-          motivosParaSalvar
+            motivosParaSalvar
 
-        );
+          );
 
 
         if (
@@ -1178,27 +1319,27 @@ ENVIAR RDO
 */
 
       const materiaisParaSalvar =
-      materiais
+        materiais
 
-      .filter(
-        item => item.descricao.trim()
-      )
+          .filter(
+            item => item.descricao.trim()
+          )
 
-      .map(
-        item => ({
+          .map(
+            item => ({
 
-          rdo_id: novaRDO.id,
+              rdo_id: novaRDO.id,
 
-          descricao: item.descricao,
+              descricao: item.descricao,
 
-          quantidade:
-          Number(item.quantidade || 0),
+              quantidade:
+                Number(item.quantidade || 0),
 
-          unidade:
-          item.unidade || "un"
+              unidade:
+                item.unidade || "un"
 
-        })
-      );
+            })
+          );
 
       if (
         materiaisParaSalvar.length > 0
@@ -1208,13 +1349,13 @@ ENVIAR RDO
           error: materiaisError
         } = await supabase
 
-        .from(
-          "rdo_materiais"
-        )
+          .from(
+            "rdo_materiais"
+          )
 
-        .insert(
-          materiaisParaSalvar
-        );
+          .insert(
+            materiaisParaSalvar
+          );
 
         if (
           materiaisError
@@ -1240,19 +1381,22 @@ ENVIAR RDO
         "RDO enviada com sucesso!"
       );
 
-      if (typeof setRdos === "function") {
-        setRdos(prev => [
-          ...(prev || []),
-          novaRDO
-        ]);
+      if (chaveRascunho) {
+
+        localStorage.removeItem(
+          chaveRascunho
+        );
+
       }
 
-      navegar("home");
+      navegar(
+        "home"
+      );
 
 
     } catch (
 
-      erro
+    erro
 
     ) {
 
@@ -1267,9 +1411,7 @@ ENVIAR RDO
 
       alert(
 
-        `Erro ao enviar RDO: ${
-
-        erro.message ||
+        `Erro ao enviar RDO: ${erro.message ||
 
         "Erro desconhecido"
 
@@ -1308,9 +1450,9 @@ ENVIAR RDO
   }
 
   function atualizarMaterial(index, campo, valor) {
-    const novosMateriais = [...materiais];
+    const novosMateriais = [ ...materiais ];
 
-    novosMateriais[index][campo] = valor;
+    novosMateriais[ index ][ campo ] = valor;
 
     setMateriais(novosMateriais);
   }
@@ -1330,34 +1472,6 @@ CARREGANDO
     return (
 
       <div className="app-layout">
-
-        <header className="app-header">
-
-          <h1>
-
-            Projeto RDO
-
-          </h1>
-
-
-          <button
-
-            className="btn btn-danger"
-
-            onClick={
-
-            sair
-
-            }
-
-            >
-
-            Sair
-
-          </button>
-
-        </header>
-
 
         <main className="app-content">
 
@@ -1383,33 +1497,6 @@ CARREGANDO
 
     <div className="app-layout">
 
-      <header className="app-header">
-
-        <h1>
-
-          Projeto RDO
-
-        </h1>
-
-
-        <button
-
-          className="btn btn-danger"
-
-          onClick={
-
-          sair
-
-          }
-
-          >
-
-          Sair
-
-        </button>
-
-      </header>
-
 
       <main className="app-content">
 
@@ -1418,23 +1505,10 @@ CARREGANDO
           <div>
 
             <button
-
               className="btn btn-ghost"
-
-              onClick={() =>
-
-              navegar(
-
-                "home"
-
-              )
-
-              }
-
-              >
-
+              onClick={voltar}
+            >
               ← Voltar
-
             </button>
 
 
@@ -1455,742 +1529,732 @@ CARREGANDO
 
         </div>
 
-
         <section className="form-card">
+
+          <div className="form-rdo-obra">
+
+            <span className="form-rdo-obra-label">
+              OBRA
+            </span>
+
+            <h2>
+              {
+                obra?.nome_condominio ||
+                "Obra não selecionada"
+              }
+            </h2>
+
+            <p>
+              <strong>Endereço:</strong>{" "}
+              {
+                obra?.endereco ||
+                "Não informado"
+              }
+            </p>
+
+          </div>
+
+          <hr />
+
 
           <h2>
 
-            {
+            Produção Diária
 
-            obra?.nome_condominio ||
+          </h2>
 
-            "Obra não selecionada"
 
-            }
+          <div className="producao-grid">
+
+            <div className="form-group">
+
+              <label>
+
+                Escavação
+
+              </label>
+
+
+              <input
+
+                type="number"
+
+                min="0"
+
+                value={
+
+                  producao.escavacao
+
+                }
+
+                onChange={
+
+                  event =>
+
+                    alterarProducao(
+
+                      "escavacao",
+
+                      event.target.value
+
+                    )
+
+                }
+
+              />
+
+            </div>
+
+
+            <div className="form-group">
+
+              <label>
+
+                Concretagem
+
+              </label>
+
+
+              <input
+
+                type="number"
+
+                min="0"
+
+                value={
+
+                  producao.concretagem
+
+                }
+
+                onChange={
+
+                  event =>
+
+                    alterarProducao(
+
+                      "concretagem",
+
+                      event.target.value
+
+                    )
+
+                }
+
+              />
+
+            </div>
+
+
+            <div className="form-group">
+
+              <label>
+
+                Acabamento
+
+              </label>
+
+
+              <input
+
+                type="number"
+
+                min="0"
+
+                value={
+
+                  producao.acabamento
+
+                }
+
+                onChange={
+
+                  event =>
+
+                    alterarProducao(
+
+                      "acabamento",
+
+                      event.target.value
+
+                    )
+
+                }
+
+              />
+
+            </div>
+
+
+            <div className="form-group">
+
+              <label>
+
+                Instalação de Módulo
+
+              </label>
+
+
+              <input
+
+                type="number"
+
+                min="0"
+
+                value={
+
+                  producao.instalacaoModulo
+
+                }
+
+                onChange={
+
+                  event =>
+
+                    alterarProducao(
+
+                      "instalacaoModulo",
+
+                      event.target.value
+
+                    )
+
+                }
+
+              />
+
+            </div>
+
+
+            <div className="form-group">
+
+              <label>
+
+                Instalação de Terça
+
+              </label>
+
+
+              <input
+
+                type="number"
+
+                min="0"
+
+                value={
+
+                  producao.instalacaoTerca
+
+                }
+
+                onChange={
+
+                  event =>
+
+                    alterarProducao(
+
+                      "instalacaoTerca",
+
+                      event.target.value
+
+                    )
+
+                }
+
+              />
+
+            </div>
+
+
+            <div className="form-group">
+
+              <label>
+
+                Instalação de Telha
+
+              </label>
+
+
+              <input
+
+                type="number"
+
+                min="0"
+
+                value={
+
+                  producao.instalacaoTelha
+
+                }
+
+                onChange={
+
+                  event =>
+
+                    alterarProducao(
+
+                      "instalacaoTelha",
+
+                      event.target.value
+
+                    )
+
+                }
+
+              />
+
+            </div>
+
+          </div>
+
+
+          <hr />
+
+
+          <h2>
+
+            Controle de Efetivo
+
+          </h2>
+
+
+          {
+
+            colaboradoresDaObra.length ===
+
+              0
+
+              ? (
+
+                <div className="empty-state">
+
+                  <p>
+
+                    Nenhum colaborador foi atribuído a esta obra.
+
+                  </p>
+
+                </div>
+
+              ) : (
+
+                <div className="efetivo-lista">
+
+                  {
+
+                    colaboradoresDaObra.map(
+
+                      colaborador => {
+
+                        const registro =
+
+                          efetivo.find(
+
+                            item =>
+
+                              item.colaboradorId ===
+
+                              colaborador.id
+
+                          );
+
+
+                        return (
+
+                          <div
+
+                            className="efetivo-item"
+
+                            key={
+
+                              colaborador.id
+
+                            }
+
+                          >
+
+                            <div>
+
+                              <strong>
+
+                                {
+
+                                  colaborador.nome
+
+                                }
+
+                              </strong>
+
+
+                              <small>
+
+                                {
+
+                                  colaborador.tipo ===
+
+                                    "diarista"
+
+                                    ? "Diarista" : "Colaborador fixo"
+
+                                }
+
+                              </small>
+
+                            </div>
+
+
+                            <div
+
+                              className="presenca-acoes"
+
+                            >
+
+                              <button
+
+                                type="button"
+
+                                className={
+
+                                  registro?.presenca ===
+
+                                    "presente"
+
+                                    ? "btn btn-success" : "btn btn-secondary"
+
+                                }
+
+                                onClick={() =>
+
+                                  alterarPresenca(
+
+                                    colaborador.id,
+
+                                    "presente"
+
+                                  )
+
+                                }
+
+                              >
+
+                                Presente
+
+                              </button>
+
+
+                              <button
+
+                                type="button"
+
+                                className={
+
+                                  registro?.presenca ===
+
+                                    "ausente"
+
+                                    ? "btn btn-danger" : "btn btn-secondary"
+
+                                }
+
+                                onClick={() =>
+
+                                  alterarPresenca(
+
+                                    colaborador.id,
+
+                                    "ausente"
+
+                                  )
+
+                                }
+
+                              >
+
+                                Ausente
+
+                              </button>
+
+                            </div>
+
+                          </div>
+
+                        );
+
+                      }
+
+                    )
+
+                  }
+
+                </div>
+
+              )
+
+          }
+
+          <hr />
+
+          <h2>
+            Materiais Enviados
+          </h2>
+
+          <div className="section-header">
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={adicionarMaterial}
+            >
+              + Adicionar Material
+            </button>
+
+          </div>
+
+          {
+            materiais.length === 0 ? (
+
+              <div className="empty-state">
+                <p>
+                  Nenhum material informado.
+                </p>
+              </div>
+
+            ) : (
+
+              <div className="materiais-lista">
+
+                {materiais.map((material, index) => (
+
+                  <div
+                    className="material-item"
+                    key={index}
+                  >
+
+                    <input
+                      type="text"
+                      placeholder="Descrição"
+                      value={material.descricao}
+                      onChange={(e) =>
+                        atualizarMaterial(
+                          index,
+                          "descricao",
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="Quantidade"
+                      value={material.quantidade}
+                      onChange={(e) =>
+                        atualizarMaterial(
+                          index,
+                          "quantidade",
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <input
+                      type="text"
+                      placeholder="Unidade"
+                      value={material.unidade}
+                      onChange={(e) =>
+                        atualizarMaterial(
+                          index,
+                          "unidade",
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() =>
+                        removerMaterial(index)
+                      }
+                    >
+                      ✕
+                    </button>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            )}
+
+          <hr />
+
+
+          <h2>
+
+            Motivo de Baixa Produtividade
 
           </h2>
 
 
           <p>
 
-            <strong>
-
-              Endereço:
-
-            </strong>{" "}
-
-            {
-
-            obra?.endereco ||
-
-            "Não informado"
-
-            }
+            Selecione um ou mais motivos, caso tenha ocorrido baixa produtividade.
 
           </p>
 
 
-          <hr />
+          <div
+
+            className="motivos-grid"
+
+          >
+
+            {
+
+              motivosDisponiveis.map(
+
+                motivo => (
+
+                  <label
+
+                    className="selection-item"
+
+                    key={
+
+                      motivo.id
+
+                    }
+
+                  >
+
+                    <input
+
+                      type="checkbox"
+
+                      checked={
+
+                        motivosBaixaProdutividade.includes(
+
+                          motivo.id
+
+                        )
+
+                      }
+
+                      onChange={() =>
+
+                        alternarMotivo(
+
+                          motivo.id
+
+                        )
+
+                      }
+
+                    />
 
 
-        <h2>
+                    <span>
 
-          Produção Diária
+                      {
 
-        </h2>
+                        motivo.nome
 
+                      }
 
-        <div className="producao-grid">
+                    </span>
+
+                  </label>
+
+                )
+
+              )
+
+            }
+
+          </div>
+
 
           <div className="form-group">
 
             <label>
 
-              Escavação
+              Detalhamento
 
             </label>
 
 
-            <input
+            <textarea
 
-            type="number"
+              rows="5"
 
-            min="0"
+              value={
 
-            value={
+                detalhamentoBaixaProdutividade
 
-            producao.escavacao
+              }
 
-            }
+              onChange={
 
-            onChange={
+                event =>
 
-            event =>
+                  setDetalhamentoBaixaProdutividade(
 
-            alterarProducao(
+                    event.target.value
 
-              "escavacao",
+                  )
 
-              event.target.value
+              }
 
-            )
-
-            }
+              placeholder="Descreva o que aconteceu..."
 
             />
 
-        </div>
+          </div>
 
 
-        <div className="form-group">
+          <div className="form-actions">
 
-          <label>
+            <button
 
-            Concretagem
+              type="button"
 
-          </label>
+              className="btn btn-primary"
 
+              onClick={
 
-          <input
+                enviarRDO
 
-          type="number"
+              }
 
-          min="0"
+              disabled={
 
-          value={
+                salvando
 
-          producao.concretagem
+              }
 
-          }
+            >
 
-          onChange={
+              {
 
-          event =>
+                salvando
 
-          alterarProducao(
+                  ? "Enviando RDO..." : "Enviar RDO"
 
-            "concretagem",
+              }
 
-            event.target.value
+            </button>
 
-          )
+          </div>
 
-          }
+        </section>
 
-          />
-
-      </div>
-
-
-      <div className="form-group">
-
-        <label>
-
-          Acabamento
-
-        </label>
-
-
-        <input
-
-        type="number"
-
-        min="0"
-
-        value={
-
-        producao.acabamento
-
-        }
-
-        onChange={
-
-        event =>
-
-        alterarProducao(
-
-          "acabamento",
-
-          event.target.value
-
-        )
-
-        }
-
-        />
+      </main>
 
     </div>
 
-
-    <div className="form-group">
-
-      <label>
-
-        Instalação de Módulo
-
-      </label>
-
-
-      <input
-
-      type="number"
-
-      min="0"
-
-      value={
-
-      producao.instalacaoModulo
-
-      }
-
-      onChange={
-
-      event =>
-
-      alterarProducao(
-
-        "instalacaoModulo",
-
-        event.target.value
-
-      )
-
-      }
-
-      />
-
-  </div>
-
-
-  <div className="form-group">
-
-    <label>
-
-      Instalação de Terça
-
-    </label>
-
-
-    <input
-
-    type="number"
-
-    min="0"
-
-    value={
-
-    producao.instalacaoTerca
-
-    }
-
-    onChange={
-
-    event =>
-
-    alterarProducao(
-
-      "instalacaoTerca",
-
-      event.target.value
-
-    )
-
-    }
-
-    />
-
-</div>
-
-
-<div className="form-group">
-
-  <label>
-
-    Instalação de Telha
-
-  </label>
-
-
-  <input
-
-  type="number"
-
-  min="0"
-
-  value={
-
-  producao.instalacaoTelha
-
-  }
-
-  onChange={
-
-  event =>
-
-  alterarProducao(
-
-    "instalacaoTelha",
-
-    event.target.value
-
-  )
-
-  }
-
-  />
-
-</div>
-
-</div>
-
-
-<hr />
-
-
-<h2>
-
-Controle de Efetivo
-
-</h2>
-
-
-{
-
-colaboradoresDaObra.length ===
-
-0
-
-? (
-
-<div className="empty-state">
-
-<p>
-
-Nenhum colaborador foi atribuído a esta obra.
-
-</p>
-
-</div>
-
-): (
-
-<div className="efetivo-lista">
-
-{
-
-colaboradoresDaObra.map(
-
-colaborador => {
-
-const registro =
-
-efetivo.find(
-
-item =>
-
-item.colaboradorId ===
-
-colaborador.id
-
-);
-
-
-return (
-
-<div
-
-className="efetivo-item"
-
-key={
-
-colaborador.id
-
-}
-
->
-
-<div>
-
-<strong>
-
-{
-
-colaborador.nome
-
-}
-
-</strong>
-
-
-<small>
-
-{
-
-colaborador.tipo ===
-
-"diarista"
-
-? "Diarista": "Colaborador fixo"
-
-}
-
-</small>
-
-</div>
-
-
-<div
-
-className="presenca-acoes"
-
->
-
-<button
-
-type="button"
-
-className={
-
-registro?.presenca ===
-
-"presente"
-
-? "btn btn-success": "btn btn-secondary"
-
-}
-
-onClick={() =>
-
-alterarPresenca(
-
-colaborador.id,
-
-"presente"
-
-)
-
-}
-
->
-
-Presente
-
-</button>
-
-
-<button
-
-type="button"
-
-className={
-
-registro?.presenca ===
-
-"ausente"
-
-? "btn btn-danger": "btn btn-secondary"
-
-}
-
-onClick={() =>
-
-alterarPresenca(
-
-colaborador.id,
-
-"ausente"
-
-)
-
-}
-
->
-
-Ausente
-
-</button>
-
-</div>
-
-</div>
-
-);
-
-}
-
-)
-
-}
-
-</div>
-
-)
-
-}
-
-<hr />
-
-<h2>
-Materiais Enviados
-</h2>
-
-<div className="section-header">
-
-<button
-type="button"
-className="btn btn-primary"
-onClick={adicionarMaterial}
->
-+ Adicionar Material
-</button>
-
-</div>
-
-{
-materiais.length === 0 ? (
-
-<div className="empty-state">
-<p>
-Nenhum material informado.
-</p>
-</div>
-
-): (
-
-<div className="materiais-lista">
-
-{materiais.map((material, index) => (
-
-<div
-className="material-item"
-key={index}
->
-
-<input
-type="text"
-placeholder="Descrição"
-value={material.descricao}
-onChange={(e) =>
-atualizarMaterial(
-index,
-"descricao",
-e.target.value
-)
-}
-/>
-
-<input
-type="number"
-placeholder="Quantidade"
-value={material.quantidade}
-onChange={(e) =>
-atualizarMaterial(
-index,
-"quantidade",
-e.target.value
-)
-}
-/>
-
-<input
-type="text"
-placeholder="Unidade"
-value={material.unidade}
-onChange={(e) =>
-atualizarMaterial(
-index,
-"unidade",
-e.target.value
-)
-}
-/>
-
-<button
-type="button"
-className="btn btn-danger"
-onClick={() =>
-removerMaterial(index)
-}
->
-✕
-</button>
-
-</div>
-
-))}
-
-</div>
-
-)}
-
-<hr />
-
-
-<h2>
-
-Motivo de Baixa Produtividade
-
-</h2>
-
-
-<p>
-
-Selecione um ou mais motivos, caso tenha ocorrido baixa produtividade.
-
-</p>
-
-
-<div
-
-className="motivos-grid"
-
->
-
-{
-
-motivosDisponiveis.map(
-
-motivo => (
-
-<label
-
-className="selection-item"
-
-key={
-
-motivo.id
-
-}
-
->
-
-<input
-
-type="checkbox"
-
-checked={
-
-motivosBaixaProdutividade.includes(
-
-motivo.id
-
-)
-
-}
-
-onChange={() =>
-
-alternarMotivo(
-
-motivo.id
-
-)
-
-}
-
-/>
-
-
-<span>
-
-{
-
-motivo.nome
-
-}
-
-</span>
-
-</label>
-
-)
-
-)
-
-}
-
-</div>
-
-
-<div className="form-group">
-
-<label>
-
-Detalhamento
-
-</label>
-
-
-<textarea
-
-rows="5"
-
-value={
-
-detalhamentoBaixaProdutividade
-
-}
-
-onChange={
-
-event =>
-
-setDetalhamentoBaixaProdutividade(
-
-event.target.value
-
-)
-
-}
-
-placeholder="Descreva o que aconteceu..."
-
-/>
-
-</div>
-
-
-<div className="form-actions">
-
-<button
-
-type="button"
-
-className="btn btn-primary"
-
-onClick={
-
-enviarRDO
-
-}
-
-disabled={
-
-salvando
-
-}
-
->
-
-{
-
-salvando
-
-? "Enviando RDO...": "Enviar RDO"
-
-}
-
-</button>
-
-</div>
-
-</section>
-
-</main>
-
-</div>
-
-);
+  );
 
 }
 

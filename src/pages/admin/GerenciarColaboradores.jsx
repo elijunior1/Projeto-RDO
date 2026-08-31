@@ -7,7 +7,9 @@ import {
   supabase
 } from "../../supabase.js";
 
-function GerenciarColaboradores( {
+import "./GerenciarColaboradores.css";
+
+function GerenciarColaboradores({
   navegar,
   sair,
 }) {
@@ -107,20 +109,20 @@ CARREGAR DADOS DO SUPABASE
         data: colaboradoresData,
         error: colaboradoresError
       } = await supabase
-      .from(
-        "rdo_colaboradores"
-      )
-      .select("*")
-      .eq(
-        "ativo",
-        true
-      )
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
+        .from(
+          "rdo_colaboradores"
+        )
+        .select("*")
+        .eq(
+          "ativo",
+          true
+        )
+        .order(
+          "nome",
+          {
+            ascending: true
+          }
+        );
 
 
       if (
@@ -136,16 +138,16 @@ CARREGAR DADOS DO SUPABASE
         data: equipesData,
         error: equipesError
       } = await supabase
-      .from(
-        "rdo_equipes"
-      )
-      .select("*")
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
+        .from(
+          "rdo_equipes"
+        )
+        .select("*")
+        .order(
+          "nome",
+          {
+            ascending: true
+          }
+        );
 
 
       if (
@@ -161,12 +163,12 @@ CARREGAR DADOS DO SUPABASE
         data: membrosData,
         error: membrosError
       } = await supabase
-      .from(
-        "rdo_equipe_colaboradores"
-      )
-      .select(
-        "equipe_id, colaborador_id"
-      );
+        .from(
+          "rdo_equipe_colaboradores"
+        )
+        .select(
+          "equipe_id, colaborador_id"
+        );
 
 
       if (
@@ -179,38 +181,38 @@ CARREGAR DADOS DO SUPABASE
 
 
       const equipesComColaboradores =
-      equipesData.map(
-        (
-          equipe
-        ) => {
+        equipesData.map(
+          (
+            equipe
+          ) => {
 
-          const colaboradoresIds =
-          membrosData
-          .filter(
-            (
-              membro
-            ) =>
-            membro.equipe_id ===
-            equipe.id
-          )
-          .map(
-            (
-              membro
-            ) =>
-            membro.colaborador_id
-          );
+            const colaboradoresIds =
+              membrosData
+                .filter(
+                  (
+                    membro
+                  ) =>
+                    membro.equipe_id ===
+                    equipe.id
+                )
+                .map(
+                  (
+                    membro
+                  ) =>
+                    membro.colaborador_id
+                );
 
 
-          return {
+            return {
 
-            ...equipe,
+              ...equipe,
 
-            colaboradoresIds
+              colaboradoresIds
 
-          };
+            };
 
-        }
-      );
+          }
+        );
 
 
       setColaboradores(
@@ -225,7 +227,7 @@ CARREGAR DADOS DO SUPABASE
 
 
     } catch (
-      erro
+    erro
     ) {
 
       console.error(
@@ -282,22 +284,22 @@ CADASTRAR COLABORADOR
         data,
         error
       } = await supabase
-      .from(
-        "rdo_colaboradores"
-      )
-      .insert([{
+        .from(
+          "rdo_colaboradores"
+        )
+        .insert([ {
 
-        nome:
-        nome.trim(),
+          nome:
+            nome.trim(),
 
-        tipo,
+          tipo,
 
-        ativo:
-        true
+          ativo:
+            true
 
-      }])
-      .select()
-      .single();
+        } ])
+        .select()
+        .single();
 
 
       if (
@@ -320,9 +322,9 @@ CADASTRAR COLABORADOR
             a,
             b
           ) =>
-          a.nome.localeCompare(
-            b.nome
-          )
+            a.nome.localeCompare(
+              b.nome
+            )
         )
       );
 
@@ -346,7 +348,7 @@ CADASTRAR COLABORADOR
 
 
     } catch (
-      erro
+    erro
     ) {
 
       console.error(
@@ -374,9 +376,9 @@ EXCLUIR COLABORADOR
   ) {
 
     const confirmar =
-    window.confirm(
-      "Deseja realmente excluir este colaborador?"
-    );
+      window.confirm(
+        "Deseja realmente excluir este colaborador?"
+      );
 
 
     if (
@@ -389,14 +391,14 @@ EXCLUIR COLABORADOR
 
 
     const pertenceAEquipe =
-    equipes.some(
-      (
-        equipe
-      ) =>
-      equipe.colaboradoresIds.includes(
-        id
-      )
-    );
+      equipes.some(
+        (
+          equipe
+        ) =>
+          equipe.colaboradoresIds.includes(
+            id
+          )
+      );
 
 
     if (
@@ -418,19 +420,19 @@ EXCLUIR COLABORADOR
       const {
         error
       } = await supabase
-      .from(
-        "rdo_colaboradores"
-      )
-      .update({
+        .from(
+          "rdo_colaboradores"
+        )
+        .update({
 
-        ativo:
-        false
+          ativo:
+            false
 
-      })
-      .eq(
-        "id",
-        id
-      );
+        })
+        .eq(
+          "id",
+          id
+        );
 
 
       if (
@@ -447,8 +449,8 @@ EXCLUIR COLABORADOR
           (
             colaborador
           ) =>
-          colaborador.id !==
-          id
+            colaborador.id !==
+            id
         )
       );
 
@@ -459,7 +461,7 @@ EXCLUIR COLABORADOR
 
 
     } catch (
-      erro
+    erro
     ) {
 
       console.error(
@@ -532,8 +534,8 @@ SELECIONAR OU REMOVER COLABORADOR
           (
             colaboradorId
           ) =>
-          colaboradorId !==
-          id
+            colaboradorId !==
+            id
         )
       );
 
@@ -676,19 +678,19 @@ EDITAR EQUIPE EXISTENTE
         const {
           error: equipeError
         } = await supabase
-        .from(
-          "rdo_equipes"
-        )
-        .update({
+          .from(
+            "rdo_equipes"
+          )
+          .update({
 
-          nome:
-          nomeEquipe.trim()
+            nome:
+              nomeEquipe.trim()
 
-        })
-        .eq(
-          "id",
-          equipeEditando.id
-        );
+          })
+          .eq(
+            "id",
+            equipeEditando.id
+          );
 
 
         if (
@@ -709,14 +711,14 @@ EDITAR EQUIPE EXISTENTE
         const {
           error: excluirVinculosError
         } = await supabase
-        .from(
-          "rdo_equipe_colaboradores"
-        )
-        .delete()
-        .eq(
-          "equipe_id",
-          equipeEditando.id
-        );
+          .from(
+            "rdo_equipe_colaboradores"
+          )
+          .delete()
+          .eq(
+            "equipe_id",
+            equipeEditando.id
+          );
 
 
         if (
@@ -735,30 +737,30 @@ EDITAR EQUIPE EXISTENTE
     */
 
         const novosVinculos =
-        colaboradoresSelecionados.map(
-          (
-            colaboradorId
-          ) => ({
+          colaboradoresSelecionados.map(
+            (
+              colaboradorId
+            ) => ({
 
               equipe_id:
-              equipeEditando.id,
+                equipeEditando.id,
 
               colaborador_id:
-              colaboradorId
+                colaboradorId
 
             })
-        );
+          );
 
 
         const {
           error: novosVinculosError
         } = await supabase
-        .from(
-          "rdo_equipe_colaboradores"
-        )
-        .insert(
-          novosVinculos
-        );
+          .from(
+            "rdo_equipe_colaboradores"
+          )
+          .insert(
+            novosVinculos
+          );
 
 
         if (
@@ -779,11 +781,11 @@ EDITAR EQUIPE EXISTENTE
         setEquipes(
           equipes.map(equipe =>
             equipe.id === equipeEditando.id
-            ? {
-              ...equipe,
-              nome: nomeEquipe.trim(),
-              colaboradoresIds: colaboradoresSelecionados
-            }: equipe
+              ? {
+                ...equipe,
+                nome: nomeEquipe.trim(),
+                colaboradoresIds: colaboradoresSelecionados
+              } : equipe
           )
         );
 
@@ -814,7 +816,7 @@ EDITAR EQUIPE EXISTENTE
 
 
       } catch (
-        erro
+      erro
       ) {
 
         console.error(
@@ -854,17 +856,17 @@ CRIAR NOVA EQUIPE
         data: novaEquipe,
         error: equipeError
       } = await supabase
-      .from(
-        "rdo_equipes"
-      )
-      .insert([{
+        .from(
+          "rdo_equipes"
+        )
+        .insert([ {
 
-        nome:
-        nomeEquipe.trim()
+          nome:
+            nomeEquipe.trim()
 
-      }])
-      .select()
-      .single();
+        } ])
+        .select()
+        .single();
 
 
       if (
@@ -877,30 +879,30 @@ CRIAR NOVA EQUIPE
 
 
       const vinculos =
-      colaboradoresSelecionados.map(
-        (
-          colaboradorId
-        ) => ({
+        colaboradoresSelecionados.map(
+          (
+            colaboradorId
+          ) => ({
 
             equipe_id:
-            novaEquipe.id,
+              novaEquipe.id,
 
             colaborador_id:
-            colaboradorId
+              colaboradorId
 
           })
-      );
+        );
 
 
       const {
         error: vinculosError
       } = await supabase
-      .from(
-        "rdo_equipe_colaboradores"
-      )
-      .insert(
-        vinculos
-      );
+        .from(
+          "rdo_equipe_colaboradores"
+        )
+        .insert(
+          vinculos
+        );
 
 
       if (
@@ -908,14 +910,14 @@ CRIAR NOVA EQUIPE
       ) {
 
         await supabase
-        .from(
-          "rdo_equipes"
-        )
-        .delete()
-        .eq(
-          "id",
-          novaEquipe.id
-        );
+          .from(
+            "rdo_equipes"
+          )
+          .delete()
+          .eq(
+            "id",
+            novaEquipe.id
+          );
 
 
         throw vinculosError;
@@ -928,7 +930,7 @@ CRIAR NOVA EQUIPE
         ...novaEquipe,
 
         colaboradoresIds:
-        colaboradoresSelecionados
+          colaboradoresSelecionados
 
       };
 
@@ -944,9 +946,9 @@ CRIAR NOVA EQUIPE
             a,
             b
           ) =>
-          a.nome.localeCompare(
-            b.nome
-          )
+            a.nome.localeCompare(
+              b.nome
+            )
         )
       );
 
@@ -972,7 +974,7 @@ CRIAR NOVA EQUIPE
 
 
     } catch (
-      erro
+    erro
     ) {
 
       console.error(
@@ -1000,9 +1002,9 @@ EXCLUIR EQUIPE
   ) {
 
     const confirmar =
-    window.confirm(
-      "Deseja realmente excluir esta equipe?"
-    );
+      window.confirm(
+        "Deseja realmente excluir esta equipe?"
+      );
 
 
     if (
@@ -1019,14 +1021,14 @@ EXCLUIR EQUIPE
       const {
         error: vinculosError
       } = await supabase
-      .from(
-        "rdo_equipe_colaboradores"
-      )
-      .delete()
-      .eq(
-        "equipe_id",
-        id
-      );
+        .from(
+          "rdo_equipe_colaboradores"
+        )
+        .delete()
+        .eq(
+          "equipe_id",
+          id
+        );
 
 
       if (
@@ -1041,14 +1043,14 @@ EXCLUIR EQUIPE
       const {
         error: equipeError
       } = await supabase
-      .from(
-        "rdo_equipes"
-      )
-      .delete()
-      .eq(
-        "id",
-        id
-      );
+        .from(
+          "rdo_equipes"
+        )
+        .delete()
+        .eq(
+          "id",
+          id
+        );
 
 
       if (
@@ -1065,8 +1067,8 @@ EXCLUIR EQUIPE
           (
             equipe
           ) =>
-          equipe.id !==
-          id
+            equipe.id !==
+            id
         )
       );
 
@@ -1077,7 +1079,7 @@ EXCLUIR EQUIPE
 
 
     } catch (
-      erro
+    erro
     ) {
 
       console.error(
@@ -1102,33 +1104,33 @@ EXCLUIR EQUIPE
       (
         colaborador
       ) =>
-      equipe.colaboradoresIds.includes(
-        colaborador.id
-      )
+        equipe.colaboradoresIds.includes(
+          colaborador.id
+        )
     );
   }
 
   //FILTRAR COLABORADORES
   const colaboradoresFiltrados =
-  colaboradores.filter(
-    colaborador =>
-    colaborador.nome
-    .toLowerCase()
-    .includes(
-      buscaColaborador.toLowerCase()
-    )
-  );
+    colaboradores.filter(
+      colaborador =>
+        colaborador.nome
+          .toLowerCase()
+          .includes(
+            buscaColaborador.toLowerCase()
+          )
+    );
 
   //FILTRAR EQUIPES
   const equipesFiltradas =
-  equipes.filter(
-    equipe =>
-    equipe.nome
-    .toLowerCase()
-    .includes(
-      buscaEquipe.toLowerCase()
-    )
-  );
+    equipes.filter(
+      equipe =>
+        equipe.nome
+          .toLowerCase()
+          .includes(
+            buscaEquipe.toLowerCase()
+          )
+    );
 
   // TELA
   if (carregando) {
@@ -1152,11 +1154,11 @@ EXCLUIR EQUIPE
             <button
               className="btn btn-ghost"
               onClick={() =>
-              navegar(
-                "home"
-              )
+                navegar(
+                  "home"
+                )
               }
-              >
+            >
 
               ← Voltar
 
@@ -1181,9 +1183,9 @@ EXCLUIR EQUIPE
 
           <button
             className={
-            abaAtual ===
-            "colaboradores"
-            ? "tab active": "tab"
+              abaAtual ===
+                "colaboradores"
+                ? "tab active" : "tab"
             }
             onClick={() => {
 
@@ -1201,7 +1203,7 @@ EXCLUIR EQUIPE
               );
 
             }}
-            >
+          >
 
             Colaboradores
 
@@ -1210,9 +1212,9 @@ EXCLUIR EQUIPE
 
           <button
             className={
-            abaAtual ===
-            "equipes"
-            ? "tab active": "tab"
+              abaAtual ===
+                "equipes"
+                ? "tab active" : "tab"
             }
             onClick={() => {
 
@@ -1225,7 +1227,7 @@ EXCLUIR EQUIPE
               );
 
             }}
-            >
+          >
 
             Equipes
 
@@ -1235,655 +1237,655 @@ EXCLUIR EQUIPE
 
 
         {abaAtual ===
-        "colaboradores" && (
+          "colaboradores" && (
 
-          <>
+            <>
 
-            <div className="page-actions">
-
-              <button
-                className="btn btn-primary"
-                onClick={() =>
-                setMostrarFormularioColaborador(
-                  !mostrarFormularioColaborador
-                )
-                }
-                >
-
-                {
-                mostrarFormularioColaborador
-                ? "Fechar": "+ Novo Colaborador"
-                }
-
-              </button>
-
-            </div>
-
-
-            {mostrarFormularioColaborador && (
-
-              <form
-                className="form-card"
-                onSubmit={
-                cadastrarColaborador
-                }
-                >
-
-                <h2>
-                  Novo Colaborador
-                </h2>
-
-
-                <div className="form-group">
-
-                  <label>
-                    Nome completo
-                  </label>
-
-
-                  <input
-                  type="text"
-                  value={
-                  nome
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                  setNome(
-                    event.target.value
-                  )
-                  }
-                  placeholder="Digite o nome"
-                  required
-                  />
-
-              </div>
-
-
-              <div className="form-group">
-
-                <label>
-                  Tipo
-                </label>
-
-
-                <select
-                  value={
-                  tipo
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                  setTipo(
-                    event.target.value
-                  )
-                  }
-                  >
-
-                  <option value="fixo">
-                    Colaborador fixo
-                  </option>
-
-
-                  <option value="diarista">
-                    Diarista
-                  </option>
-
-                </select>
-
-              </div>
-
-
-              <div className="form-actions">
+              <div className="page-actions">
 
                 <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() =>
-                  setMostrarFormularioColaborador(
-                    false
-                  )
-                  }
-                  >
-
-                  Cancelar
-
-                </button>
-
-
-                <button
-                  type="submit"
                   className="btn btn-primary"
-                  >
+                  onClick={() =>
+                    setMostrarFormularioColaborador(
+                      !mostrarFormularioColaborador
+                    )
+                  }
+                >
 
-                  Cadastrar
+                  {
+                    mostrarFormularioColaborador
+                      ? "Fechar" : "+ Novo Colaborador"
+                  }
 
                 </button>
 
               </div>
 
-            </form>
 
-          )}
+              {mostrarFormularioColaborador && (
 
-          < br/>
-          <p>
-            Filtro de busca
-          </p>
+                <form
+                  className="form-card"
+                  onSubmit={
+                    cadastrarColaborador
+                  }
+                >
 
-          <div className="form-group">
-            <input
-            type="text"
-            placeholder="Buscar colaborador..."
-            value={buscaColaborador}
-            onChange={(event) =>
-            setBuscaColaborador(
-              event.target.value
-            )
-            }
-            />
-        </div>
-
-        <section className="section">
-
-          <div className="section-header">
-
-            <h2>
-              Colaboradores cadastrados
-            </h2>
+                  <h2>
+                    Novo Colaborador
+                  </h2>
 
 
-            <span>
-              {colaboradoresFiltrados.length}
-              {" "}
-              colaborador(es)
-            </span>
+                  <div className="form-group">
 
-          </div>
+                    <label>
+                      Nome completo
+                    </label>
 
 
-          {colaboradoresFiltrados.length === 0 ? (
+                    <input
+                      type="text"
+                      value={
+                        nome
+                      }
+                      onChange={(
+                        event
+                      ) =>
+                        setNome(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Digite o nome"
+                      required
+                    />
 
-            <div className="empty-state">
+                  </div>
 
-              <p>
-                Nenhum colaborador encontrado.
-              </p>
 
-            </div>
+                  <div className="form-group">
 
-          ): (
+                    <label>
+                      Tipo
+                    </label>
 
-            <div className="cards-grid">
 
-              {colaboradoresFiltrados.map(
-                (
-                  colaborador
-                ) => (
-
-                  <article
-                    className="card"
-                    key={
-                    colaborador.id
-                    }
+                    <select
+                      value={
+                        tipo
+                      }
+                      onChange={(
+                        event
+                      ) =>
+                        setTipo(
+                          event.target.value
+                        )
+                      }
                     >
 
-                    <h3>
-                      {
-                      colaborador.nome
-                      }
-                    </h3>
+                      <option value="fixo">
+                        Colaborador fixo
+                      </option>
 
 
-                    <p>
+                      <option value="diarista">
+                        Diarista
+                      </option>
 
-                      Tipo:{" "}
+                    </select>
 
-                      {
-                      colaborador.tipo ===
-                      "fixo"
-                      ? "Colaborador fixo": "Diarista"
-                      }
+                  </div>
 
-                    </p>
 
+                  <div className="form-actions">
 
                     <button
-                      className="btn btn-danger"
+                      type="button"
+                      className="btn btn-secondary"
                       onClick={() =>
-                      excluirColaborador(
-                        colaborador.id
-                      )
+                        setMostrarFormularioColaborador(
+                          false
+                        )
                       }
-                      >
+                    >
 
-                      Excluir
+                      Cancelar
 
                     </button>
 
-                  </article>
 
-                )
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                    >
+
+                      Cadastrar
+
+                    </button>
+
+                  </div>
+
+                </form>
+
               )}
 
-            </div>
-
-          )}
-
-        </section>
-
-      </>
-
-    )}
-
-
-    {abaAtual ===
-    "equipes" && (
-
-      <>
-
-        <div className="page-actions">
-
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-
-              if (
-                mostrarFormularioEquipe
-              ) {
-
-                setNomeEquipe(
-                  ""
-                );
-
-
-                setColaboradoresSelecionados(
-                  []
-                );
-
-
-                setEquipeEditando(
-                  null
-                );
-
-              }
-
-
-              setMostrarFormularioEquipe(
-                !mostrarFormularioEquipe
-              );
-
-            }}
-            >
-
-            {
-            mostrarFormularioEquipe
-            ? "Fechar": "+ Nova Equipe"
-            }
-
-          </button>
-
-        </div>
-
-
-        {mostrarFormularioEquipe && (
-
-          <form
-            className="form-card"
-            onSubmit={
-            criarEquipe
-            }
-            >
-
-            <h2>
-
-              {
-              equipeEditando
-              ? "Editar Equipe": "Nova Equipe"
-              }
-
-            </h2>
-
-
-            <div className="form-group">
-
-              <label>
-                Nome da equipe
-              </label>
-
-
-              <input
-              type="text"
-              value={
-              nomeEquipe
-              }
-              onChange={(
-                event
-              ) =>
-              setNomeEquipe(
-                event.target.value
-              )
-              }
-              placeholder="Ex: Equipe Fundação 1"
-              required
-              />
-
-          </div>
-
-
-          <div className="form-group">
-
-            <label>
-              Selecionar colaboradores
-            </label>
-
-
-            {colaboradores.length ===
-            0 ? (
-
+              < br />
               <p>
-                Cadastre colaboradores antes de criar uma equipe.
+                Filtro de busca
               </p>
 
-            ): (
-
-              <div className="selection-list">
-
-                {colaboradoresFiltrados.map(
-                  (
-                    colaborador
-                  ) => {
-
-                    const jaPertenceAEquipe =
-                    colaboradorJaPertenceAEquipe(
-                      colaborador.id
-                    );
-
-
-                    return (
-
-                      <label
-                        className={
-                        jaPertenceAEquipe
-                        ? "selection-item disabled": "selection-item"
-                        }
-                        key={
-                        colaborador.id
-                        }
-                        >
-
-                        <input
-                        type="checkbox"
-                        checked={
-                        colaboradoresSelecionados.includes(
-                          colaborador.id
-                        )
-                        }
-                        disabled={
-                        jaPertenceAEquipe
-                        }
-                        onChange={() =>
-                        alternarColaborador(
-                          colaborador.id
-                        )
-                        }
-                        />
-
-
-                      <span>
-
-                        {
-                        colaborador.nome
-                        }
-
-
-                        {jaPertenceAEquipe && (
-
-                          <small>
-
-                            {" "}
-                            — Já pertence a outra equipe
-
-                          </small>
-
-                        )}
-
-                      </span>
-
-                    </label>
-
-                  );
-
-                }
-
-              )}
-
-            </div>
-
-          )}
-
-        </div>
-
-
-        <div className="form-actions">
-
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => {
-
-              setNomeEquipe(
-                ""
-              );
-
-
-              setColaboradoresSelecionados(
-                []
-              );
-
-
-              setEquipeEditando(
-                null
-              );
-
-
-              setMostrarFormularioEquipe(
-                false
-              );
-
-            }}
-            >
-
-            Cancelar
-
-          </button>
-
-
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={
-            salvandoEquipe
-            }
-            >
-
-            {
-            salvandoEquipe
-            ? "Salvando...": equipeEditando
-            ? "Salvar Alterações": "Criar Equipe"
-            }
-
-          </button>
-
-        </div>
-
-      </form>
-
-    )}
-
-    < br/>
-    <p>
-      Buscador de equipes
-    </p>
-    <div className="form-group">
-      <input
-      type="text"
-      placeholder="Buscar equipe..."
-      value={buscaEquipe}
-      onChange={(event) =>
-      setBuscaEquipe(
-        event.target.value
-      )
-      }
-      />
-  </div>
-
-  <section className="section">
-
-    <div className="section-header">
-
-      <h2>
-        Equipes cadastradas
-      </h2>
-
-
-      <span>
-        {equipesFiltradas.length}
-        {" "}
-        equipe(s)
-      </span>
-
-    </div>
-
-
-    {equipesFiltradas.length ===
-    0 ? (
-
-      <div className="empty-state">
-
-        <p>
-          Nenhuma equipe encontrada.
-        </p>
-
-      </div>
-
-    ): (
-
-      <div className="cards-grid">
-
-        {equipesFiltradas.map(
-          (
-            equipe
-          ) => {
-
-            const membros =
-            obterMembrosEquipe(
-              equipe
-            );
-
-
-            return (
-
-              <article
-                className="card"
-                key={
-                equipe.id
-                }
-                >
-
-                <h3>
-                  {
-                  equipe.nome
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Buscar colaborador..."
+                  value={buscaColaborador}
+                  onChange={(event) =>
+                    setBuscaColaborador(
+                      event.target.value
+                    )
                   }
-                </h3>
+                />
+              </div>
+
+              <section className="section">
+
+                <div className="section-header">
+
+                  <h2>
+                    Colaboradores cadastrados
+                  </h2>
 
 
-                <p>
-                  {
-                  membros.length
-                  } colaborador(es)
-                </p>
-
-
-                <ul>
-
-                  {membros.map(
-                    (
-                      membro
-                    ) => (
-
-                      <li
-                        key={
-                        membro.id
-                        }
-                        >
-
-                        {
-                        membro.nome
-                        }
-
-                      </li>
-
-                    )
-                  )}
-
-                </ul>
-
-
-                <div className="card-actions">
-
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() =>
-                    editarEquipe(
-                      equipe
-                    )
-                    }
-                    >
-
-                    Editar
-
-                  </button>
-
-
-                  <button
-                    className="btn btn-danger"
-                    onClick={() =>
-                    excluirEquipe(
-                      equipe.id
-                    )
-                    }
-                    >
-
-                    Excluir equipe
-
-                  </button>
+                  <span>
+                    {colaboradoresFiltrados.length}
+                    {" "}
+                    colaborador(es)
+                  </span>
 
                 </div>
 
-              </article>
 
-            );
+                {colaboradoresFiltrados.length === 0 ? (
 
-          }
+                  <div className="empty-state">
 
-        )}
+                    <p>
+                      Nenhum colaborador encontrado.
+                    </p>
 
-      </div>
+                  </div>
 
-    )}
+                ) : (
 
-  </section>
+                  <div className="cards-grid">
 
-</>
+                    {colaboradoresFiltrados.map(
+                      (
+                        colaborador
+                      ) => (
 
-)}
+                        <article
+                          className="card"
+                          key={
+                            colaborador.id
+                          }
+                        >
 
-</main>
+                          <h3>
+                            {
+                              colaborador.nome
+                            }
+                          </h3>
 
-</div>
 
-);
+                          <p>
+
+                            Tipo:{" "}
+
+                            {
+                              colaborador.tipo ===
+                                "fixo"
+                                ? "Colaborador fixo" : "Diarista"
+                            }
+
+                          </p>
+
+
+                          <button
+                            className="btn btn-danger"
+                            onClick={() =>
+                              excluirColaborador(
+                                colaborador.id
+                              )
+                            }
+                          >
+
+                            Excluir
+
+                          </button>
+
+                        </article>
+
+                      )
+                    )}
+
+                  </div>
+
+                )}
+
+              </section>
+
+            </>
+
+          )}
+
+
+        {abaAtual ===
+          "equipes" && (
+
+            <>
+
+              <div className="page-actions">
+
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+
+                    if (
+                      mostrarFormularioEquipe
+                    ) {
+
+                      setNomeEquipe(
+                        ""
+                      );
+
+
+                      setColaboradoresSelecionados(
+                        []
+                      );
+
+
+                      setEquipeEditando(
+                        null
+                      );
+
+                    }
+
+
+                    setMostrarFormularioEquipe(
+                      !mostrarFormularioEquipe
+                    );
+
+                  }}
+                >
+
+                  {
+                    mostrarFormularioEquipe
+                      ? "Fechar" : "+ Nova Equipe"
+                  }
+
+                </button>
+
+              </div>
+
+
+              {mostrarFormularioEquipe && (
+
+                <form
+                  className="form-card"
+                  onSubmit={
+                    criarEquipe
+                  }
+                >
+
+                  <h2>
+
+                    {
+                      equipeEditando
+                        ? "Editar Equipe" : "Nova Equipe"
+                    }
+
+                  </h2>
+
+
+                  <div className="form-group">
+
+                    <label>
+                      Nome da equipe
+                    </label>
+
+
+                    <input
+                      type="text"
+                      value={
+                        nomeEquipe
+                      }
+                      onChange={(
+                        event
+                      ) =>
+                        setNomeEquipe(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Ex: Equipe Fundação 1"
+                      required
+                    />
+
+                  </div>
+
+
+                  <div className="form-group">
+
+                    <label>
+                      Selecionar colaboradores
+                    </label>
+
+
+                    {colaboradores.length ===
+                      0 ? (
+
+                      <p>
+                        Cadastre colaboradores antes de criar uma equipe.
+                      </p>
+
+                    ) : (
+
+                      <div className="selection-list">
+
+                        {colaboradoresFiltrados.map(
+                          (
+                            colaborador
+                          ) => {
+
+                            const jaPertenceAEquipe =
+                              colaboradorJaPertenceAEquipe(
+                                colaborador.id
+                              );
+
+
+                            return (
+
+                              <label
+                                className={
+                                  jaPertenceAEquipe
+                                    ? "selection-item disabled" : "selection-item"
+                                }
+                                key={
+                                  colaborador.id
+                                }
+                              >
+
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    colaboradoresSelecionados.includes(
+                                      colaborador.id
+                                    )
+                                  }
+                                  disabled={
+                                    jaPertenceAEquipe
+                                  }
+                                  onChange={() =>
+                                    alternarColaborador(
+                                      colaborador.id
+                                    )
+                                  }
+                                />
+
+
+                                <span>
+
+                                  {
+                                    colaborador.nome
+                                  }
+
+
+                                  {jaPertenceAEquipe && (
+
+                                    <small>
+
+                                      {" "}
+                                      — Já pertence a outra equipe
+
+                                    </small>
+
+                                  )}
+
+                                </span>
+
+                              </label>
+
+                            );
+
+                          }
+
+                        )}
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+
+                  <div className="form-actions">
+
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => {
+
+                        setNomeEquipe(
+                          ""
+                        );
+
+
+                        setColaboradoresSelecionados(
+                          []
+                        );
+
+
+                        setEquipeEditando(
+                          null
+                        );
+
+
+                        setMostrarFormularioEquipe(
+                          false
+                        );
+
+                      }}
+                    >
+
+                      Cancelar
+
+                    </button>
+
+
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={
+                        salvandoEquipe
+                      }
+                    >
+
+                      {
+                        salvandoEquipe
+                          ? "Salvando..." : equipeEditando
+                            ? "Salvar Alterações" : "Criar Equipe"
+                      }
+
+                    </button>
+
+                  </div>
+
+                </form>
+
+              )}
+
+              < br />
+              <p>
+                Buscador de equipes
+              </p>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Buscar equipe..."
+                  value={buscaEquipe}
+                  onChange={(event) =>
+                    setBuscaEquipe(
+                      event.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <section className="section">
+
+                <div className="section-header">
+
+                  <h2>
+                    Equipes cadastradas
+                  </h2>
+
+
+                  <span>
+                    {equipesFiltradas.length}
+                    {" "}
+                    equipe(s)
+                  </span>
+
+                </div>
+
+
+                {equipesFiltradas.length ===
+                  0 ? (
+
+                  <div className="empty-state">
+
+                    <p>
+                      Nenhuma equipe encontrada.
+                    </p>
+
+                  </div>
+
+                ) : (
+
+                  <div className="cards-grid">
+
+                    {equipesFiltradas.map(
+                      (
+                        equipe
+                      ) => {
+
+                        const membros =
+                          obterMembrosEquipe(
+                            equipe
+                          );
+
+
+                        return (
+
+                          <article
+                            className="card"
+                            key={
+                              equipe.id
+                            }
+                          >
+
+                            <h3>
+                              {
+                                equipe.nome
+                              }
+                            </h3>
+
+
+                            <p>
+                              {
+                                membros.length
+                              } colaborador(es)
+                            </p>
+
+
+                            <ul>
+
+                              {membros.map(
+                                (
+                                  membro
+                                ) => (
+
+                                  <li
+                                    key={
+                                      membro.id
+                                    }
+                                  >
+
+                                    {
+                                      membro.nome
+                                    }
+
+                                  </li>
+
+                                )
+                              )}
+
+                            </ul>
+
+
+                            <div className="card-actions">
+
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                  editarEquipe(
+                                    equipe
+                                  )
+                                }
+                              >
+
+                                Editar
+
+                              </button>
+
+
+                              <button
+                                className="btn btn-danger"
+                                onClick={() =>
+                                  excluirEquipe(
+                                    equipe.id
+                                  )
+                                }
+                              >
+
+                                Excluir equipe
+
+                              </button>
+
+                            </div>
+
+                          </article>
+
+                        );
+
+                      }
+
+                    )}
+
+                  </div>
+
+                )}
+
+              </section>
+
+            </>
+
+          )}
+
+      </main>
+
+    </div>
+
+  );
 
 }
 

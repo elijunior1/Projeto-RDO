@@ -4,6 +4,14 @@ import {
 } from "react";
 
 import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate
+} from "react-router-dom";
+
+import {
   supabase
 } from "./supabase.js";
 
@@ -12,78 +20,293 @@ import AppLayout from "./components/AppLayout";
 import Login from "./pages/Login";
 
 import HomeAdmin from "./pages/admin/HomeAdmin";
-
 import GerenciarObras from "./pages/admin/GerenciarObras";
-
 import GerenciarColaboradores from "./pages/admin/GerenciarColaboradores";
-
 import ObrasEncarregado from "./pages/admin/ObrasEncarregado";
-
 import ConsultaRDO from "./pages/admin/ConsultaRDO";
-
-import HomeEncarregado from "./pages/encarregado/HomeEncarregado";
-
-import FormRDO from "./pages/encarregado/FormRDO";
-
 import SelecionarObraRDO from "./pages/admin/SelecionarObraRDO";
 
-function App() {
+import HomeEncarregado from "./pages/encarregado/HomeEncarregado";
+import FormRDO from "./pages/encarregado/FormRDO";
+import DetalheRDO from "./pages/admin/DetalheRDO";
+
+
+/*
+==================================================
+LAYOUT DO SISTEMA
+==================================================
+*/
+
+function LayoutSistema({
+  usuario,
+  sair,
+  children
+}) {
+
+  const navigate = useNavigate();
+
+  function navegar(tela) {
+
+    const rotas = {
+
+      home:
+        usuario?.perfil === "admin"
+          ? "/admin"
+          : "/encarregado",
+
+      "home-admin":
+        "/admin",
+
+      "gerenciar-obras":
+        "/admin/obras",
+
+      "gerenciar-colaboradores":
+        "/admin/colaboradores",
+
+      "obras-encarregado":
+        "/admin/encarregados",
+
+      "consulta-rdo":
+        "/admin/consulta-rdo",
+
+      "selecionar-rdo":
+        "/admin/selecionar-rdo",
+
+      "form-rdo":
+        "/encarregado/form-rdo"
+
+    };
+
+    const rota = rotas[ tela ];
+
+    if (rota) {
+      navigate(rota);
+    }
+
+  }
+
+  function voltar() {
+    navigate(-1);
+  }
+
+  return (
+    <AppLayout
+      usuario={usuario}
+      navegar={navegar}
+      voltar={voltar}
+      sair={sair}
+    >
+      {children}
+    </AppLayout>
+  );
+
+}
+
+
+/*
+==================================================
+APP PRINCIPAL
+==================================================
+*/
+
+function Sistema() {
+
+  const navigate = useNavigate();
+
 
   const [
     usuario,
     setUsuario
   ] = useState(null);
 
+
   const [
     carregando,
     setCarregando
   ] = useState(true);
+
 
   const [
     dadosCarregando,
     setDadosCarregando
   ] = useState(false);
 
-  const [
-    telaAtual,
-    setTelaAtual
-  ] = useState("home");
 
   const [
     encarregadoSelecionado,
     setEncarregadoSelecionado
   ] = useState(null);
 
+
   const [
     obraSelecionada,
     setObraSelecionada
   ] = useState(null);
+
 
   const [
     obras,
     setObras
   ] = useState([]);
 
+
   const [
     colaboradores,
     setColaboradores
   ] = useState([]);
+
 
   const [
     equipes,
     setEquipes
   ] = useState([]);
 
+
   const [
     rdos,
     setRdos
   ] = useState([]);
 
+
   /*
+  ================================================
+  RESTAURAR OBRA SELECIONADA
+  ================================================
+  */
 
-VERIFICAR SESSÃO
+  useEffect(() => {
 
-*/
+    const obraSalva =
+      localStorage.getItem(
+        "rdo_obra_selecionada"
+      );
+
+
+    if (!obraSalva) {
+      return;
+    }
+
+
+    try {
+
+      setObraSelecionada(
+        JSON.parse(
+          obraSalva
+        )
+      );
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao restaurar obra:",
+        erro
+      );
+
+      localStorage.removeItem(
+        "rdo_obra_selecionada"
+      );
+
+    }
+
+  }, []);
+
+
+  /*
+  ================================================
+  RESTAURAR ENCARREGADO
+  ================================================
+  */
+
+  useEffect(() => {
+
+    const encarregadoSalvo =
+      localStorage.getItem(
+        "rdo_encarregado_selecionado"
+      );
+
+
+    if (!encarregadoSalvo) {
+      return;
+    }
+
+
+    try {
+
+      setEncarregadoSelecionado(
+        JSON.parse(
+          encarregadoSalvo
+        )
+      );
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao restaurar encarregado:",
+        erro
+      );
+
+      localStorage.removeItem(
+        "rdo_encarregado_selecionado"
+      );
+
+    }
+
+  }, []);
+
+
+  /*
+  ================================================
+  SALVAR OBRA SELECIONADA
+  ================================================
+  */
+
+  useEffect(() => {
+
+    if (obraSelecionada) {
+
+      localStorage.setItem(
+        "rdo_obra_selecionada",
+        JSON.stringify(
+          obraSelecionada
+        )
+      );
+
+    }
+
+  }, [
+    obraSelecionada
+  ]);
+
+
+  /*
+  ================================================
+  SALVAR ENCARREGADO SELECIONADO
+  ================================================
+  */
+
+  useEffect(() => {
+
+    if (encarregadoSelecionado) {
+
+      localStorage.setItem(
+        "rdo_encarregado_selecionado",
+        JSON.stringify(
+          encarregadoSelecionado
+        )
+      );
+
+    }
+
+  }, [
+    encarregadoSelecionado
+  ]);
+
+
+  /*
+  ================================================
+  VERIFICAR SESSÃO
+  ================================================
+  */
 
   useEffect(() => {
 
@@ -93,41 +316,39 @@ VERIFICAR SESSÃO
     const {
       data: listener
     } =
-    supabase.auth.onAuthStateChange(
-      async (
-        evento,
-        sessao
-      ) => {
+      supabase.auth.onAuthStateChange(
+        async (
+          evento,
+          sessao
+        ) => {
 
-        if (
-          sessao?.user
-        ) {
+          if (sessao?.user) {
 
-          await carregarUsuario(
-            sessao.user
+            await carregarUsuario(
+              sessao.user
+            );
+
+          } else {
+
+            setUsuario(null);
+
+            setObras([]);
+
+            setColaboradores([]);
+
+            setEquipes([]);
+
+            setRdos([]);
+
+          }
+
+
+          setCarregando(
+            false
           );
 
-        } else {
-
-          setUsuario(null);
-
-          setObras([]);
-
-          setColaboradores([]);
-
-          setEquipes([]);
-
-          setRdos([]);
-
         }
-
-
-        setCarregando(
-          false
-        );
-
-      }
-    );
+      );
 
 
     return () => {
@@ -138,11 +359,12 @@ VERIFICAR SESSÃO
 
   }, []);
 
+
   /*
-
-VERIFICAR SESSÃO ATUAL
-
-*/
+  ================================================
+  VERIFICAR SESSÃO ATUAL
+  ================================================
+  */
 
   async function verificarSessao() {
 
@@ -150,32 +372,26 @@ VERIFICAR SESSÃO ATUAL
       data,
       error
     } =
-    await supabase.auth.getSession();
+      await supabase.auth.getSession();
 
 
-    if (
-      error
-    ) {
+    if (error) {
 
       console.error(
         "Erro ao verificar sessão:",
         error
       );
 
-
       setCarregando(
         false
       );
-
 
       return;
 
     }
 
 
-    if (
-      data.session?.user
-    ) {
+    if (data.session?.user) {
 
       await carregarUsuario(
         data.session.user
@@ -190,11 +406,12 @@ VERIFICAR SESSÃO ATUAL
 
   }
 
+
   /*
-
-CARREGAR USUÁRIO
-
-*/
+  ================================================
+  CARREGAR USUÁRIO
+  ================================================
+  */
 
   async function carregarUsuario(
     usuarioAuth
@@ -204,32 +421,26 @@ CARREGAR USUÁRIO
       data,
       error
     } =
-    await supabase
-    .from(
-      "usuarios"
-    )
-    .select("*")
-    .eq(
-      "id",
-      usuarioAuth.id
-    )
-    .single();
+      await supabase
+        .from(
+          "usuarios"
+        )
+        .select("*")
+        .eq(
+          "id",
+          usuarioAuth.id
+        )
+        .single();
 
 
-    if (
-      error
-    ) {
+    if (error) {
 
       console.error(
         "Erro ao carregar usuário:",
         error
       );
 
-
-      setUsuario(
-        null
-      );
-
+      setUsuario(null);
 
       return;
 
@@ -241,10 +452,10 @@ CARREGAR USUÁRIO
       ...data,
 
       auth_id:
-      usuarioAuth.id,
+        usuarioAuth.id,
 
       email:
-      usuarioAuth.email
+        usuarioAuth.email
 
     };
 
@@ -256,18 +467,14 @@ CARREGAR USUÁRIO
 
     await carregarDados();
 
-
-    setTelaAtual(
-      "home"
-    );
-
   }
 
+
   /*
-
-CARREGAR TODOS OS DADOS DO SISTEMA
-
-*/
+  ================================================
+  CARREGAR DADOS
+  ================================================
+  */
 
   async function carregarDados() {
 
@@ -279,104 +486,96 @@ CARREGAR TODOS OS DADOS DO SISTEMA
 
 
       /*
-  ==============================
-  OBRAS
-  ==============================
-  */
+      ============================================
+      OBRAS
+      ============================================
+      */
 
       const {
         data: obrasData,
         error: obrasError
       } =
-      await supabase
-      .from(
-        "rdo_obras"
-      )
-      .select(`
-        *,
-        encarregado:usuarios(
-        id,
-        nome,
-        email
-        ),
-        equipe:rdo_equipes(
-        id,
-        nome
-        )
-        `)
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
+        await supabase
+          .from(
+            "rdo_obras"
+          )
+          .select(`
+            *,
+            encarregado:usuarios(
+              id,
+              nome,
+              email
+            ),
+            equipe:rdo_equipes(
+              id,
+              nome
+            )
+          `)
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
 
 
-      if (
-        obrasError
-      ) {
+      if (obrasError) {
 
         throw obrasError;
 
       }
 
 
-
       /*
-  ==============================
-  EQUIPES
-  ==============================
-  */
+      ============================================
+      EQUIPES
+      ============================================
+      */
 
       const {
         data: equipesData,
         error: equipesError
       } =
-      await supabase
-      .from(
-        "rdo_equipes"
-      )
-      .select("*")
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
+        await supabase
+          .from(
+            "rdo_equipes"
+          )
+          .select("*")
+          .order(
+            "nome",
+            {
+              ascending: true
+            }
+          );
 
 
-      if (
-        equipesError
-      ) {
+      if (equipesError) {
 
         throw equipesError;
 
       }
 
 
-
       /*
-  ==============================
-  MEMBROS DAS EQUIPES
-  ==============================
-  */
+      ============================================
+      MEMBROS DAS EQUIPES
+      ============================================
+      */
 
       const {
         data: membrosData,
         error: membrosError
       } =
-      await supabase
-      .from(
-        "rdo_equipe_colaboradores"
-      )
-      .select(
-        "equipe_id, colaborador_id"
-      );
+        await supabase
+          .from(
+            "rdo_equipe_colaboradores"
+          )
+          .select(
+            "equipe_id, colaborador_id"
+          );
 
 
-      if (
-        membrosError
-      ) {
+      if (membrosError) {
 
         throw membrosError;
 
@@ -384,345 +583,574 @@ CARREGAR TODOS OS DADOS DO SISTEMA
 
 
       const equipesComColaboradores =
-      (
-        equipesData ||
-        []
-      ).map(
-        equipe => ({
+        (
+          equipesData ||
+          []
+        ).map(
+          equipe => ({
 
-          ...equipe,
+            ...equipe,
 
-          colaboradoresIds:
-          (
-            membrosData ||
-            []
-          )
-          .filter(
-            membro =>
-            membro.equipe_id ===
-            equipe.id
-          )
-          .map(
-            membro =>
-            membro.colaborador_id
-          )
+            colaboradoresIds:
+              (
+                membrosData ||
+                []
+              )
+                .filter(
+                  membro =>
+                    membro.equipe_id ===
+                    equipe.id
+                )
+                .map(
+                  membro =>
+                    membro.colaborador_id
+                )
 
-        })
-      );
+          })
+        );
 
 
       /*
-  ==============================
-  COLABORADORES
-  ==============================
-  */
+      ============================================
+      COLABORADORES
+      ============================================
+      */
 
       const {
         data: colaboradoresData,
         error: colaboradoresError
       } =
-      await supabase
-      .from(
-        "rdo_colaboradores"
-      )
-      .select("*")
-      .eq(
-        "ativo",
-        true
-      )
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
+        await supabase
+          .from(
+            "rdo_colaboradores"
+          )
+          .select("*")
+          .eq(
+            "ativo",
+            true
+          )
+          .order(
+            "nome",
+            {
+              ascending: true
+            }
+          );
 
 
-      if (
-        colaboradoresError
-      ) {
+      if (colaboradoresError) {
 
         throw colaboradoresError;
 
       }
 
 
-
       /*
-  ==============================
-  RDOs
-  ==============================
-  */
+      ============================================
+      RDOs
+      ============================================
+      */
 
       const {
         data: rdosData,
         error: rdosError
       } =
-      await supabase
-      .from(
-        "rdos"
-      )
-      .select("*")
-      .order(
-        "data",
-        {
-          ascending: false
-        }
-      );
-      if (
-        rdosError
-      ) {
+        await supabase
+          .from(
+            "rdos"
+          )
+          .select("*")
+          .order(
+            "data",
+            {
+              ascending: false
+            }
+          );
+
+
+      if (rdosError) {
+
         throw rdosError;
+
       }
 
+
       /*
-  ATUALIZAR ESTADOS
-*/
+      ============================================
+      ATUALIZAR ESTADOS
+      ============================================
+      */
 
       setObras(
-        obrasData ||
-        []
+        obrasData || []
       );
+
+
       setEquipes(
         equipesComColaboradores
       );
+
+
       setColaboradores(
-        colaboradoresData ||
-        []
+        colaboradoresData || []
       );
+
+
       setRdos(
-        rdosData ||
-        []
+        rdosData || []
       );
+
+
       console.log(
         "Dados carregados:",
         {
           obras:
-          obrasData?.length || 0,
+            obrasData?.length || 0,
+
           equipes:
-          equipesData?.length || 0,
+            equipesData?.length || 0,
+
           colaboradores:
-          colaboradoresData?.length || 0,
+            colaboradoresData?.length || 0,
+
           rdos:
-          rdosData?.length || 0
+            rdosData?.length || 0
         }
       );
-    } catch (
-      erro
-    ) {
+
+
+    } catch (erro) {
+
       console.error(
         "Erro ao carregar dados do sistema:",
         erro
       );
+
+
       alert(
         "Erro ao carregar os dados do sistema."
       );
+
+
     } finally {
+
       setDadosCarregando(
         false
       );
+
     }
+
   }
 
+
   /*
-SAIR
-*/
+  ================================================
+  NAVEGAÇÃO
+  ================================================
+  */
+
+  function navegar(tela) {
+
+    const rotas = {
+
+      home:
+        usuario?.perfil === "admin"
+          ? "/admin"
+          : "/encarregado",
+
+      "home-admin":
+        "/admin",
+
+      "gerenciar-obras":
+        "/admin/obras",
+
+      "gerenciar-colaboradores":
+        "/admin/colaboradores",
+
+      "obras-encarregado":
+        "/admin/encarregados",
+
+      "consulta-rdo":
+        "/admin/consulta-rdo",
+
+      "selecionar-rdo":
+        "/admin/selecionar-rdo",
+
+      "form-rdo":
+        "/encarregado/form-rdo"
+
+    };
+
+
+    const rota = rotas[ tela ];
+
+
+    if (rota) {
+
+      navigate(rota);
+
+    }
+
+  }
+
+
+  /*
+  ================================================
+  SAIR
+  ================================================
+  */
 
   async function sair() {
+
     const {
       error
     } =
-    await supabase.auth.signOut();
-    if (
-      error
-    ) {
+      await supabase.auth.signOut();
+
+
+    if (error) {
+
       console.error(
         "Erro ao sair:",
         error
       );
+
       return;
+
     }
-    setUsuario(
-      null
-    );
-    setTelaAtual(
-      "home"
-    );
-    setObraSelecionada(
-      null
-    );
-    setEncarregadoSelecionado(
-      null
-    );
+
+
+    setUsuario(null);
+
+    setObraSelecionada(null);
+
+    setEncarregadoSelecionado(null);
+
     setObras([]);
+
     setColaboradores([]);
+
     setEquipes([]);
+
     setRdos([]);
-  }
 
-  /*
-NAVEGAÇÃO
-*/
-
-  function navegar(
-    tela
-  ) {
-    setTelaAtual(
-      tela
+    localStorage.removeItem(
+      "rdo_obra_selecionada"
     );
+
+    localStorage.removeItem(
+      "rdo_encarregado_selecionado"
+    );
+
+
+    navigate(
+      "/login",
+      {
+        replace: true
+      }
+    );
+
   }
 
+
   /*
-CARREGANDO
-*/
+  ================================================
+  CARREGANDO
+  ================================================
+  */
 
   if (
     carregando ||
     dadosCarregando
   ) {
+
     return (
+
       <main>
+
         <p>
           Carregando...
         </p>
+
       </main>
+
     );
+
   }
+
 
   /*
-LOGIN
-*/
+  ================================================
+  LOGIN
+  ================================================
+  */
 
   if (!usuario) {
+
     return (
-      <Login
-        aoEntrar={
-        carregarUsuario
-        }
+
+      <Routes>
+
+        <Route
+          path="/login"
+          element={
+            <Login
+              aoEntrar={
+                carregarUsuario
+              }
+            />
+          }
         />
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/login"
+              replace
+            />
+          }
+        />
+
+      </Routes>
+
     );
+
   }
+
+
+  /*
+  ================================================
+  ROTAS DO SISTEMA
+  ================================================
+  */
 
   return (
-    <AppLayout
+
+    <LayoutSistema
       usuario={usuario}
-      navegar={navegar}
       sair={sair}
-      >
-      {renderizarTela()}
-    </AppLayout>
+    >
+
+      <Routes>
+
+        {/* ======================================
+            ADMIN
+        ====================================== */}
+
+        {usuario.perfil === "admin" && (
+
+          <>
+
+            <Route
+              path="/admin"
+              element={
+
+                <HomeAdmin
+                  usuario={usuario}
+                  navegar={navegar}
+                  setEncarregadoSelecionado={
+                    setEncarregadoSelecionado
+                  }
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="/admin/obras"
+              element={
+
+                <GerenciarObras
+                  navegar={navegar}
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="/admin/colaboradores"
+              element={
+
+                <GerenciarColaboradores
+                  navegar={navegar}
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="/admin/encarregados"
+              element={
+
+                <ObrasEncarregado
+                  encarregado={
+                    encarregadoSelecionado
+                  }
+                  obras={obras}
+                  navegar={navegar}
+                  setObraSelecionada={
+                    setObraSelecionada
+                  }
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="/admin/consulta-rdo"
+              element={
+
+                <ConsultaRDO
+                  obra={obraSelecionada}
+                  rdos={rdos}
+                  navegar={navegar}
+                  voltar={() => navigate(-1)}
+                  sair={sair}
+                />
+
+              }
+            />
+
+            <Route
+              path="/admin/rdo/:id"
+              element={
+                <DetalheRDO
+                  obra={obraSelecionada}
+                  navegar={navegar}
+                  sair={sair}
+                />
+              }
+            />
+
+
+            <Route
+              path="/admin/selecionar-rdo"
+              element={
+
+                <SelecionarObraRDO
+                  obras={obras}
+                  navegar={navegar}
+                  setObraSelecionada={
+                    setObraSelecionada
+                  }
+                />
+
+              }
+            />
+
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="/admin"
+                  replace
+                />
+              }
+            />
+
+          </>
+
+        )}
+
+
+        {/* ======================================
+            ENCARREGADO
+        ====================================== */}
+
+        {usuario.perfil === "encarregado" && (
+
+          <>
+
+            <Route
+              path="/encarregado"
+              element={
+
+                <HomeEncarregado
+                  usuario={usuario}
+                  obras={obras}
+                  rdos={rdos}
+                  navegar={navegar}
+                  setObraSelecionada={
+                    setObraSelecionada
+                  }
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="/encarregado/form-rdo"
+              element={
+
+                <FormRDO
+                  usuario={usuario}
+                  obra={obraSelecionada}
+                  colaboradores={colaboradores}
+                  equipes={equipes}
+                  rdos={rdos}
+                  setRdos={setRdos}
+                  navegar={navegar}
+                  voltar={() => navigate(-1)}
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="/encarregado"
+                  replace
+                />
+              }
+            />
+
+          </>
+
+        )}
+
+      </Routes>
+
+    </LayoutSistema>
+
   );
 
-  function renderizarTela() {
-    if (
-      usuario.perfil === "admin"
-    ) {
-      if (telaAtual === "home") {
-        return (
-          <HomeAdmin
-            usuario={usuario}
-            navegar={navegar}
-            setEncarregadoSelecionado={
-            setEncarregadoSelecionado
-            }
-            sair={sair}
-            />
-        );
-      }
-
-      if (telaAtual === "gerenciar-obras") {
-        return (
-          <GerenciarObras
-            navegar={navegar}
-            sair={sair}
-            />
-        );
-      }
-
-      if (telaAtual === "gerenciar-colaboradores") {
-        return (
-          <GerenciarColaboradores
-            navegar={navegar}
-            sair={sair}
-            />
-        );
-      }
-
-      if (telaAtual === "obras-encarregado") {
-        return (
-          <ObrasEncarregado
-            encarregado={encarregadoSelecionado}
-            obras={obras}
-            navegar={navegar}
-            setObraSelecionada={
-            setObraSelecionada
-            }
-            sair={sair}
-            />
-        );
-      }
-
-      if (telaAtual === "consulta-rdo") {
-        return (
-          <ConsultaRDO
-            obra={obraSelecionada}
-            rdos={rdos}
-            navegar={navegar}
-            sair={sair}
-            />
-        );
-      }
-      if (telaAtual === "selecionar-rdo") {
-        return (
-          <SelecionarObraRDO
-            obras={obras}
-            navegar={navegar}
-            setObraSelecionada={setObraSelecionada}
-            />
-        );
-      }
-    }
-
-    if (
-      usuario.perfil === "encarregado"
-    ) {
-
-      if (
-        telaAtual === "home"
-      ) {
-        return (
-          <HomeEncarregado
-            usuario={usuario}
-            obras={obras}
-            rdos={rdos}
-            navegar={navegar}
-            setObraSelecionada={
-            setObraSelecionada
-            }
-            sair={sair}
-            />
-        );
-      }
-
-      if (
-        telaAtual === "form-rdo"
-      ) {
-        return (
-          <FormRDO
-            usuario={usuario}
-            obra={obraSelecionada}
-            colaboradores={colaboradores}
-            equipes={equipes}
-            rdos={rdos}
-            setRdos={setRdos}
-            navegar={navegar}
-            sair={sair}
-            />
-        );
-      }
-    }
-    return null;
-  }
 }
+
+
+/*
+==================================================
+ROTEADOR PRINCIPAL
+==================================================
+*/
+
+function App() {
+
+  return (
+
+    <BrowserRouter>
+
+      <Sistema />
+
+    </BrowserRouter>
+
+  );
+
+}
+
 
 export default App;

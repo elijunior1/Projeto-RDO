@@ -9,8 +9,6 @@ import {
 
 import "./GerenciarObras.css";
 
-//import "./GerenciarObras.css";
-
 function GerenciarObras( {
   navegar,
   sair,

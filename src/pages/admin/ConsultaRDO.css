@@ -17,7 +17,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .55);
+  background: rgba(0, 0, 0, 0.55);
 
   display: flex;
   justify-content: center;
@@ -28,15 +28,17 @@
 }
 
 .modal-card {
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
+  width: min(900px, 100%);
+  max-height: calc(100vh - 40px);
 
   overflow-y: auto;
 
-  background: white;
+  background: #fff;
   border-radius: 20px;
+
   padding: 24px;
+
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
 
 .rdo-modal-header {
@@ -106,7 +108,7 @@
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .rdo-section h3 {
@@ -207,7 +209,6 @@
 /* MOBILE */
 
 @media (max-width: 768px) {
-
   .obras-grid {
     grid-template-columns: 1fr;
   }
@@ -240,5 +241,39 @@
   .rdo-stat-card strong {
     font-size: 20px;
   }
+}
 
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .modal-card {
+    margin-top: 10px;
+    width: 100%;
+    max-height: none;
+    min-height: calc(100vh - 20px);
+
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .rdo-stats {
+    flex-direction: column;
+  }
+
+  .rdo-stat-card {
+    width: 100%;
+  }
+
+  .header-actions {
+    display: flex;
+    width: 100%;
+  }
+
+  .header-actions button {
+    flex: 1;
+  }
 }

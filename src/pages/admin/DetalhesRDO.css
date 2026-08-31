@@ -1,0 +1,385 @@
+/* ==================================================
+   PÁGINA DETALHES RDO
+================================================== */
+
+.detalhes-rdo-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ==================================================
+   CABEÇALHO
+================================================== */
+
+.detalhes-rdo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.detalhes-rdo-titulo {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.detalhes-rdo-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.detalhes-rdo-titulo h1 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 28px;
+}
+
+.detalhes-rdo-titulo p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.detalhes-rdo-acoes {
+  display: flex;
+  gap: 10px;
+}
+
+/* ==================================================
+   INFORMAÇÕES
+================================================== */
+
+.rdo-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.rdo-info-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.rdo-info-card span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.rdo-info-card strong {
+  display: block;
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.codigo-rdo {
+  font-size: 11px !important;
+  word-break: break-all;
+}
+
+/* ==================================================
+   SEÇÕES
+================================================== */
+
+.rdo-resumo-section {
+  margin-bottom: 28px;
+}
+
+.section-heading {
+  margin-bottom: 14px;
+}
+
+.section-heading span,
+.detalhe-card-header > div > span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #64748b;
+}
+
+.section-heading h2,
+.detalhe-card-header h2 {
+  margin: 3px 0 0;
+  color: #1e293b;
+  font-size: 19px;
+}
+
+/* ==================================================
+   CARDS DE RESUMO
+================================================== */
+
+.rdo-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 12px;
+}
+
+.rdo-stat-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.rdo-stat-card span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.rdo-stat-card strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 30px;
+  color: #1e293b;
+}
+
+.rdo-stat-card small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+/* ==================================================
+   DUAS COLUNAS
+================================================== */
+
+.rdo-duas-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ==================================================
+   CARD DE DETALHES
+================================================== */
+
+.rdo-detalhe-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.detalhe-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.detalhe-card-header > strong {
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+/* ==================================================
+   LISTAS
+================================================== */
+
+.lista-rdo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linha-rdo {
+  min-height: 48px;
+  padding: 10px 12px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.linha-rdo > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.linha-rdo strong {
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.linha-rdo-icone {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: white;
+  border-radius: 8px;
+}
+
+/* ==================================================
+   VAZIO
+================================================== */
+
+.rdo-vazio {
+  padding: 22px;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+.rdo-vazio.sucesso {
+  color: #15803d;
+}
+
+/* ==================================================
+   EFETIVO
+================================================== */
+
+.efetivo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 8px;
+}
+
+.efetivo-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 12px;
+
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.efetivo-card-nome {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.efetivo-card-nome strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.efetivo-status {
+  flex-shrink: 0;
+}
+
+.status-presente {
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.status-ausente {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* ==================================================
+   OBSERVAÇÕES
+================================================== */
+
+.rdo-observacoes {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  padding: 16px;
+
+  color: #334155;
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+}
+
+/* ==================================================
+   MOBILE
+================================================== */
+
+@media (max-width: 900px) {
+  .rdo-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rdo-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rdo-duas-colunas {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .detalhes-rdo-header {
+    flex-direction: column;
+  }
+
+  .detalhes-rdo-titulo {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .detalhes-rdo-titulo h1 {
+    font-size: 23px;
+  }
+
+  .detalhes-rdo-acoes {
+    width: 100%;
+  }
+
+  .detalhes-rdo-acoes button {
+    width: 100%;
+  }
+
+  .rdo-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rdo-stat-card {
+    padding: 14px;
+  }
+
+  .rdo-stat-card strong {
+    font-size: 25px;
+  }
+
+  .efetivo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rdo-detalhe-card {
+    padding: 15px;
+  }
+}

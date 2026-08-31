@@ -1,24 +1,686 @@
+/* =========================================================
+   FORM RDO - ESTILO DO FORMULÁRIO DO ENCARREGADO
+   ========================================================= */
+
+.form-rdo-page {
+  width: 100%;
+}
+
+/* =========================================================
+   CABEÇALHO DA OBRA
+   ========================================================= */
+
+.form-rdo-obra {
+  position: relative;
+
+  margin-bottom: 24px;
+
+  padding: 22px;
+
+  border-radius: 16px;
+
+  background: var(--card-background, #ffffff);
+
+  border: 1px solid var(--border-color, #e5e7eb);
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.form-rdo-obra h2 {
+  margin: 0 0 8px;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  color: var(--text-primary, #111827);
+}
+
+.form-rdo-obra p {
+  margin: 4px 0;
+
+  color: var(--text-secondary, #6b7280);
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   TÍTULOS DAS SEÇÕES
+   ========================================================= */
+
+.form-card > h2 {
+  margin-top: 28px;
+  margin-bottom: 8px;
+
+  font-size: 20px;
+
+  color: var(--text-primary, #111827);
+}
+
+.form-card > h2:first-child {
+  margin-top: 0;
+}
+
+.form-card > p {
+  color: var(--text-secondary, #6b7280);
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   DIVISÓRIAS
+   ========================================================= */
+
+.form-card hr {
+  margin: 28px 0;
+
+  border: 0;
+
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+/* =========================================================
+   PRODUÇÃO
+   ========================================================= */
+
+.producao-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-top: 18px;
+}
+
+.producao-grid .form-group {
+  margin: 0;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.producao-grid .form-group:focus-within {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+  transform: translateY(-1px);
+}
+
+.producao-grid label {
+  display: block;
+
+  margin-bottom: 9px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #374151;
+}
+
+.producao-grid input {
+  width: 100%;
+
+  height: 52px;
+
+  padding: 0 14px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  text-align: center;
+
+  color: #111827;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.producao-grid input:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
+   CONTROLE DE EFETIVO
+   ========================================================= */
+
+.efetivo-lista {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-top: 18px;
+}
+
+.efetivo-item {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding: 16px 18px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.efetivo-item:hover {
+  border-color: #d1d5db;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.efetivo-item > div:first-child {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.efetivo-item strong {
+  font-size: 15px;
+
+  color: #111827;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.efetivo-item small {
+  font-size: 12px;
+
+  color: #6b7280;
+}
+
+/* =========================================================
+   BOTÕES DE PRESENÇA
+   ========================================================= */
+
+.presenca-acoes {
+  display: flex;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.presenca-acoes .btn {
+  min-width: 94px;
+
+  min-height: 42px;
+}
+
+/* =========================================================
+   MATERIAIS
+   ========================================================= */
+
 .materiais-lista {
   display: flex;
+
   flex-direction: column;
+
   gap: 12px;
+
+  margin-top: 16px;
 }
 
 .material-item {
   display: grid;
-  grid-template-columns: 2fr 120px 120px 60px;
-  gap: 12px;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    120px
+    100px
+    46px;
+
+  gap: 10px;
+
   align-items: center;
+
+  padding: 12px;
+
+  border-radius: 14px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
 }
 
 .material-item input {
   width: 100%;
+
+  min-height: 46px;
+
+  padding: 0 12px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  font-size: 14px;
+
+  color: #111827;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-@media (max-width: 768px) {
+.material-item input:focus {
+  border-color: #2563eb;
 
-  .material-item {
-    grid-template-columns: 1fr;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.material-item .btn {
+  width: 46px;
+
+  height: 46px;
+
+  padding: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 16px;
+}
+
+/* =========================================================
+   CABEÇALHO DOS MATERIAIS
+   ========================================================= */
+
+.form-card .section-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-top: 14px;
+
+  margin-bottom: 10px;
+}
+
+/* =========================================================
+   MOTIVOS DE BAIXA PRODUTIVIDADE
+   ========================================================= */
+
+.motivos-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 18px;
+
+  margin-bottom: 20px;
+}
+
+.motivos-grid .selection-item {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  min-height: 50px;
+
+  padding: 12px 14px;
+
+  border-radius: 11px;
+
+  border: 1px solid #e5e7eb;
+
+  background: #f8fafc;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.motivos-grid .selection-item:hover {
+  border-color: #cbd5e1;
+
+  background: #f1f5f9;
+}
+
+.motivos-grid input {
+  width: 18px;
+
+  height: 18px;
+
+  margin: 0;
+
+  accent-color: #2563eb;
+
+  flex-shrink: 0;
+}
+
+.motivos-grid span {
+  font-size: 14px;
+
+  color: #374151;
+}
+
+/* =========================================================
+   TEXTAREA
+   ========================================================= */
+
+.form-card textarea {
+  width: 100%;
+
+  min-height: 120px;
+
+  resize: vertical;
+
+  padding: 13px 14px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: #111827;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-card textarea:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* =========================================================
+   BOTÃO ENVIAR RDO
+   ========================================================= */
+
+.form-card > .form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  margin-top: 30px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.form-card > .form-actions .btn {
+  min-width: 180px;
+
+  min-height: 50px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+}
+
+/* =========================================================
+   ESTADO VAZIO
+   ========================================================= */
+
+.form-card .empty-state {
+  margin-top: 16px;
+
+  padding: 24px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+
+  border: 1px dashed #d1d5db;
+
+  text-align: center;
+}
+
+.form-card .empty-state p {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   BOTÃO VOLTAR
+   ========================================================= */
+
+.page-header .btn-ghost {
+  margin-bottom: 12px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE - TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .producao-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .material-item {
+    grid-template-columns:
+      minmax(0, 1fr)
+      100px
+      85px
+      44px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVIDADE - CELULAR
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .app-content {
+    padding: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 25px;
+  }
+
+  .form-card {
+    padding: 18px;
+  }
+
+  .form-card > h2 {
+    font-size: 18px;
+  }
+
+  /* PRODUÇÃO */
+
+  .producao-grid {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .producao-grid .form-group {
+    padding: 13px;
+  }
+
+  .producao-grid input {
+    height: 50px;
+  }
+
+  /* EFETIVO */
+
+  .efetivo-item {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    padding: 14px;
+  }
+
+  .efetivo-item > div:first-child {
+    width: 100%;
+  }
+
+  .presenca-acoes {
+    width: 100%;
+  }
+
+  .presenca-acoes .btn {
+    flex: 1;
+
+    min-width: 0;
+  }
+
+  /* MATERIAIS */
+
+  .material-item {
+    grid-template-columns: 1fr 1fr;
+
+    gap: 9px;
+
+    padding: 12px;
+  }
+
+  .material-item input:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .material-item .btn {
+    width: 100%;
+
+    grid-column: 2;
+
+    height: 46px;
+  }
+
+  /* MOTIVOS */
+
+  .motivos-grid {
+    grid-template-columns: 1fr;
+
+    gap: 8px;
+  }
+
+  .motivos-grid .selection-item {
+    min-height: 48px;
+  }
+
+  /* BOTÃO FINAL */
+
+  .form-card > .form-actions {
+    display: block;
+  }
+
+  .form-card > .form-actions .btn {
+    width: 100%;
+
+    min-height: 54px;
+  }
+}
+
+/* =========================================================
+   CELULARES PEQUENOS
+   ========================================================= */
+
+@media (max-width: 380px) {
+  .app-content {
+    padding: 12px;
+  }
+
+  .form-card {
+    padding: 14px;
+  }
+
+  .efetivo-item {
+    padding: 12px;
+  }
+
+  .presenca-acoes {
+    gap: 6px;
+  }
+
+  .presenca-acoes .btn {
+    font-size: 13px;
+  }
+}
+
+.form-rdo-obra-label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  color: #2563eb;
 }

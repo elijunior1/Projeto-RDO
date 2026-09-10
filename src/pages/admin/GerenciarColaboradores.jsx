@@ -52,6 +52,16 @@ function GerenciarColaboradores({
   ] = useState("");
 
   const [
+    colaboradorEditando,
+    setColaboradorEditando
+  ] = useState(null);
+
+  const [
+    salvandoColaborador,
+    setSalvandoColaborador
+  ] = useState(false);
+
+  const [
     tipo,
     setTipo
   ] = useState("fixo");
@@ -252,10 +262,10 @@ CARREGAR DADOS DO SUPABASE
   }
 
   /*
-
-CADASTRAR COLABORADOR
-
-*/
+  ================================================
+  CADASTRAR OU EDITAR COLABORADOR
+  ================================================
+  */
 
   async function cadastrarColaborador(
     event
@@ -264,13 +274,137 @@ CADASTRAR COLABORADOR
     event.preventDefault();
 
 
-    if (
-      !nome.trim()
-    ) {
+    if (!nome.trim()) {
 
       alert(
         "Digite o nome do colaborador."
       );
+
+      return;
+
+    }
+
+
+    /*
+    ==============================================
+    EDITAR COLABORADOR EXISTENTE
+    ==============================================
+    */
+
+    if (colaboradorEditando) {
+
+      try {
+
+        setSalvandoColaborador(
+          true
+        );
+
+
+        const {
+          data,
+          error
+        } = await supabase
+          .from(
+            "rdo_colaboradores"
+          )
+          .update({
+
+            nome:
+              nome.trim(),
+
+            tipo
+
+          })
+          .eq(
+            "id",
+            colaboradorEditando.id
+          )
+          .select()
+          .single();
+
+
+        if (error) {
+
+          throw error;
+
+        }
+
+
+        /*
+        ==========================================
+        ATUALIZAR LISTA
+        ==========================================
+        */
+
+        setColaboradores(
+          colaboradores
+            .map(
+              colaborador =>
+                colaborador.id ===
+                  colaboradorEditando.id
+                  ? data
+                  : colaborador
+            )
+            .sort(
+              (
+                a,
+                b
+              ) =>
+                a.nome.localeCompare(
+                  b.nome
+                )
+            )
+        );
+
+
+        /*
+        ==========================================
+        LIMPAR FORMULÁRIO
+        ==========================================
+        */
+
+        setNome("");
+
+        setTipo(
+          "fixo"
+        );
+
+        setColaboradorEditando(
+          null
+        );
+
+        setMostrarFormularioColaborador(
+          false
+        );
+
+
+        alert(
+          "Colaborador atualizado com sucesso!"
+        );
+
+
+      } catch (
+      erro
+      ) {
+
+        console.error(
+          "Erro ao atualizar colaborador:",
+          erro
+        );
+
+
+        alert(
+          "Erro ao atualizar colaborador."
+        );
+
+
+      } finally {
+
+        setSalvandoColaborador(
+          false
+        );
+
+      }
 
 
       return;
@@ -278,7 +412,18 @@ CADASTRAR COLABORADOR
     }
 
 
+    /*
+    ==============================================
+    CADASTRAR NOVO COLABORADOR
+    ==============================================
+    */
+
     try {
+
+      setSalvandoColaborador(
+        true
+      );
+
 
       const {
         data,
@@ -287,24 +432,24 @@ CADASTRAR COLABORADOR
         .from(
           "rdo_colaboradores"
         )
-        .insert([ {
+        .insert([
+          {
 
-          nome:
-            nome.trim(),
+            nome:
+              nome.trim(),
 
-          tipo,
+            tipo,
 
-          ativo:
-            true
+            ativo:
+              true
 
-        } ])
+          }
+        ])
         .select()
         .single();
 
 
-      if (
-        error
-      ) {
+      if (error) {
 
         throw error;
 
@@ -331,11 +476,9 @@ CADASTRAR COLABORADOR
 
       setNome("");
 
-
       setTipo(
         "fixo"
       );
-
 
       setMostrarFormularioColaborador(
         false
@@ -361,7 +504,45 @@ CADASTRAR COLABORADOR
         "Erro ao cadastrar colaborador."
       );
 
+
+    } finally {
+
+      setSalvandoColaborador(
+        false
+      );
+
     }
+
+  }
+
+  /*
+================================================
+INICIAR EDIÇÃO DO COLABORADOR
+================================================
+*/
+
+  function editarColaborador(
+    colaborador
+  ) {
+
+    setColaboradorEditando(
+      colaborador
+    );
+
+
+    setNome(
+      colaborador.nome
+    );
+
+
+    setTipo(
+      colaborador.tipo || "fixo"
+    );
+
+
+    setMostrarFormularioColaborador(
+      true
+    );
 
   }
 
@@ -1272,7 +1453,13 @@ EXCLUIR EQUIPE
                 >
 
                   <h2>
-                    Novo Colaborador
+
+                    {
+                      colaboradorEditando
+                        ? "Editar Colaborador"
+                        : "Novo Colaborador"
+                    }
+
                   </h2>
 
 
@@ -1323,7 +1510,7 @@ EXCLUIR EQUIPE
                     >
 
                       <option value="fixo">
-                        Colaborador fixo
+                        Funcionário
                       </option>
 
 
@@ -1341,11 +1528,23 @@ EXCLUIR EQUIPE
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() =>
+                      onClick={() => {
+
+                        setNome("");
+
+                        setTipo(
+                          "fixo"
+                        );
+
+                        setColaboradorEditando(
+                          null
+                        );
+
                         setMostrarFormularioColaborador(
                           false
-                        )
-                      }
+                        );
+
+                      }}
                     >
 
                       Cancelar
@@ -1356,9 +1555,18 @@ EXCLUIR EQUIPE
                     <button
                       type="submit"
                       className="btn btn-primary"
+                      disabled={
+                        salvandoColaborador
+                      }
                     >
 
-                      Cadastrar
+                      {
+                        salvandoColaborador
+                          ? "Salvando..."
+                          : colaboradorEditando
+                            ? "Salvar Alterações"
+                            : "Cadastrar"
+                      }
 
                     </button>
 
@@ -1444,24 +1652,42 @@ EXCLUIR EQUIPE
                             {
                               colaborador.tipo ===
                                 "fixo"
-                                ? "Colaborador fixo" : "Diarista"
+                                ? "Funcionário" : "Diarista"
                             }
 
                           </p>
 
 
-                          <button
-                            className="btn btn-danger"
-                            onClick={() =>
-                              excluirColaborador(
-                                colaborador.id
-                              )
-                            }
-                          >
+                          <div className="card-actions">
 
-                            Excluir
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() =>
+                                editarColaborador(
+                                  colaborador
+                                )
+                              }
+                            >
 
-                          </button>
+                              Editar
+
+                            </button>
+
+
+                            <button
+                              className="btn btn-danger"
+                              onClick={() =>
+                                excluirColaborador(
+                                  colaborador.id
+                                )
+                              }
+                            >
+
+                              Excluir
+
+                            </button>
+
+                          </div>
 
                         </article>
 

@@ -2,19 +2,18 @@ import {
   useState
 } from "react";
 
-function SelecionarObraRDO( {
+function SelecionarObraRDO({
   obras,
   navegar,
   setObraSelecionada,
 }) {
 
-  const [busca,
-    setBusca] = useState("");
+  const [ busca, setBusca ] = useState("");
 
   const obrasFiltradas = obras.filter((obra) =>
     obra.nome_condominio
-    ?.toLowerCase()
-    .includes(busca.toLowerCase())
+      ?.toLowerCase()
+      .includes(busca.toLowerCase())
   );
 
   function abrirConsulta(obra) {
@@ -22,83 +21,106 @@ function SelecionarObraRDO( {
     navegar("consulta-rdo");
   }
 
+  function abrirRelatorio(obra) {
+    setObraSelecionada(obra);
+    navegar("relatorio-rdo");
+  }
+
   return (
     <div className="app-content">
 
       <div className="page-header">
         <div>
+
           <button
             className="btn btn-ghost"
             onClick={() => navegar("home")}
-            >
+          >
             ← Voltar
           </button>
 
           <h1>Consulta de RDOs</h1>
 
           <p>
-            Selecione uma obra para consultar os relatórios.
+            Selecione uma obra para consultar ou gerar relatórios.
           </p>
+
         </div>
       </div>
 
       <div className="form-group">
+
         <input
-        type="text"
-        placeholder="Buscar condomínio..."
-        value={busca}
-        onChange={(e) =>
-        setBusca(e.target.value)
-        }
+          type="text"
+          placeholder="Buscar condomínio..."
+          value={busca}
+          onChange={(e) =>
+            setBusca(e.target.value)
+          }
         />
-    </div>
 
-    <div className="obras-grid">
+      </div>
 
-      {obrasFiltradas.map((obra) => (
+      <div className="obras-grid">
 
-        <div
-          key={obra.id}
-          className="obra-card"
+        {obrasFiltradas.map((obra) => (
+
+          <div
+            key={obra.id}
+            className="obra-card"
           >
 
-          <div className="obra-card-header">
+            <div className="obra-card-header">
 
-            <h3>
-              {obra.nome_condominio}
-            </h3>
+              <h3>
+                {obra.nome_condominio}
+              </h3>
 
-          </div>
+            </div>
 
-          <p>
-            📍 {obra.endereco}
-          </p>
+            <p>
+              📍 {obra.endereco}
+            </p>
 
-          <p>
-            📅 Início: {obra.data_inicio?.split("-").reverse().join("/")}
-          </p>
-
-          <div className="obra-card-actions">
-
-            <button
-              className="btn btn-primary"
-              onClick={() =>
-              abrirConsulta(obra)
+            <p>
+              📅 Início:{" "}
+              {obra.data_inicio
+                ?.split("-")
+                .reverse()
+                .join("/")
               }
+            </p>
+
+            <div className="obra-card-actions">
+
+              <button
+                className="btn btn-primary"
+                onClick={() =>
+                  abrirConsulta(obra)
+                }
               >
-              Consultar RDOs
-            </button>
+                📋 Consultar RDOs
+              </button>
+
+              <button
+                className="btn btn-secondary"
+                onClick={() =>
+                  abrirRelatorio(obra)
+                }
+              >
+                📊 Relatório
+              </button>
+
+            </div>
 
           </div>
 
-        </div>
+        ))}
 
-      ))}
+      </div>
 
     </div>
-
-  </div>
-);
+  );
 }
 
 export default SelecionarObraRDO;

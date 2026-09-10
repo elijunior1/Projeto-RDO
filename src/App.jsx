@@ -29,6 +29,7 @@ import SelecionarObraRDO from "./pages/admin/SelecionarObraRDO";
 import HomeEncarregado from "./pages/encarregado/HomeEncarregado";
 import FormRDO from "./pages/encarregado/FormRDO";
 import DetalheRDO from "./pages/admin/DetalheRDO";
+import RelatorioRDO from "./pages/admin/RelatorioRDO";
 
 
 /*
@@ -68,6 +69,9 @@ function LayoutSistema({
 
       "consulta-rdo":
         "/admin/consulta-rdo",
+
+      "relatorio-rdo":
+        "/admin/relatorio-rdo",
 
       "selecionar-rdo":
         "/admin/selecionar-rdo",
@@ -769,6 +773,9 @@ function Sistema() {
       "obras-encarregado":
         "/admin/encarregados",
 
+      "relatorio-rdo":
+        "/admin/relatorio-rdo",
+
       "consulta-rdo":
         "/admin/consulta-rdo",
 
@@ -1016,6 +1023,17 @@ function Sistema() {
                   sair={sair}
                 />
 
+              }
+            />
+
+            <Route
+              path="/admin/relatorio-rdo"
+              element={
+                <RelatorioRDO
+                  obraSelecionada={obraSelecionada}
+                  navegar={navegar}
+                  sair={sair}
+                />
               }
             />
 

@@ -1,5 +1,9 @@
-importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
+importScripts(
+  "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js",
+);
+importScripts(
+  "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js",
+);
 
 firebase.initializeApp({
   apiKey: "AIzaSyA4JXg36W7sU4no3vDBWlFuadujlAz8Whs",
@@ -13,8 +17,40 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  self.registration.showNotification(payload.notification.title, {
-    body: payload.notification.body,
+  const titulo = payload.data?.title || "Projeto-RDO";
+
+  const opcoes = {
+    body: payload.data?.body || "Você tem uma atualização no Projeto-RDO.",
     icon: "/icon-192.png",
-  });
+    badge: "/icon-192.png",
+    data: {
+      url: payload.data?.url || "/",
+    },
+  };
+
+  return self.registration.showNotification(titulo, opcoes);
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    clients
+      .matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      })
+      .then((janelas) => {
+        for (const janela of janelas) {
+          if ("focus" in janela) {
+            janela.navigate(url);
+            return janela.focus();
+          }
+        }
+
+        return clients.openWindow(url);
+      }),
+  );
 });

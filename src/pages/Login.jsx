@@ -10,13 +10,11 @@ import {
   getToken
 } from "firebase/messaging";
 
-import {
-  messaging
-} from "../firebase";
+import { obterMessaging } from "../firebase.js";
 
 import "../styles/login.css";
 
-function Login( {
+function Login({
   aoEntrar
 }) {
   const [
@@ -41,28 +39,45 @@ function Login( {
 
   async function registrarPush(usuarioId) {
     try {
-      const permissao = await Notification.requestPermission();
-
-      if (permissao !== "granted") {
-        console.log("Permissão negada.");
+      if (!("Notification" in window)) {
+        console.log("Este navegador não suporta notificações.");
         return;
       }
 
-      const token = await getToken(messaging, {
+      const instanciaMessaging = await obterMessaging();
+
+      if (!instanciaMessaging) {
+        console.log("Firebase Messaging não está disponível neste dispositivo.");
+        return;
+      }
+
+      const permissao = await Notification.requestPermission();
+
+      if (permissao !== "granted") {
+        console.log("Permissão para notificações negada.");
+        return;
+      }
+
+      const token = await getToken(instanciaMessaging, {
         vapidKey: "BBnNkQN4noJl0sap1sqs6QTnAHDCc1FBGE3EJRUdcFLvJ-KrPEhAS3TRq3k8UtSMLmO-LSsIgSrkqcY8fq1C0UQ"
       });
 
-      if (!token) return;
+      if (!token) {
+        console.log("Não foi possível obter o token de notificações.");
+        return;
+      }
 
-      console.log("Token:", token);
+      const { error } = await supabase
+        .from("usuarios")
+        .update({ push_token: token })
+        .eq("id", usuarioId);
 
-      await supabase
-      .from("usuarios")
-      .update({
-        push_token: token
-      })
-      .eq("id", usuarioId);
+      if (error) {
+        console.error("Erro ao salvar token no Supabase:", error);
+        return;
+      }
 
+      console.log("Notificações push registradas.");
     } catch (erro) {
       console.error("Erro ao registrar Push:", erro);
     }
@@ -78,9 +93,9 @@ function Login( {
       data,
       error
     } = await supabase.auth.signInWithPassword({
-        email,
-        password: senha
-      });
+      email,
+      password: senha
+    });
 
     if (error) {
       setErro(
@@ -97,10 +112,10 @@ function Login( {
       const {
         data: usuario
       } = await supabase
-      .from("usuarios")
-      .select("id")
-      .eq("auth_user_id", data.user.id)
-      .single();
+        .from("usuarios")
+        .select("id")
+        .eq("auth_user_id", data.user.id)
+        .single();
 
       if (usuario) {
         await registrarPush(usuario.id);
@@ -135,7 +150,7 @@ function Login( {
         <form
           className="login-form"
           onSubmit={fazerLogin}
-          >
+        >
 
           <div className="input-group">
 
@@ -144,69 +159,69 @@ function Login( {
             </label>
 
             <input
-            type="email"
-            value={email}
-            onChange={(event)=>
-            setEmail(event.target.value)
-            }
-            placeholder="Digite seu e-mail"
-            required
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              placeholder="Digite seu e-mail"
+              required
             />
 
-        </div>
+          </div>
 
-        <div className="input-group">
+          <div className="input-group">
 
-          <label>
-            Senha
-          </label>
+            <label>
+              Senha
+            </label>
 
-          <input
-          type="password"
-          value={senha}
-          onChange={(event)=>
-          setSenha(event.target.value)
+            <input
+              type="password"
+              value={senha}
+              onChange={(event) =>
+                setSenha(event.target.value)
+              }
+              placeholder="Digite sua senha"
+              required
+            />
+
+          </div>
+
+          {
+            erro &&
+            (
+              <div className="login-error">
+                {erro}
+              </div>
+            )
           }
-          placeholder="Digite sua senha"
-          required
-          />
 
-      </div>
+          <button
+            type="submit"
+            disabled={carregando}
+            className="login-btn"
+          >
 
-      {
-      erro &&
-      (
-        <div className="login-error">
-          {erro}
-        </div>
-      )
-      }
+            {
+              carregando
+                ?
+                "Entrando..." :
+                "Entrar"
+            }
 
-      <button
-        type="submit"
-        disabled={carregando}
-        className="login-btn"
-        >
+          </button>
 
-        {
-        carregando
-        ?
-        "Entrando...":
-        "Entrar"
-        }
+        </form>
 
-      </button>
+        <footer>
+          Sistema de gerenciamento de obras
+        </footer>
 
-    </form>
+      </section>
 
-    <footer>
-      Sistema de gerenciamento de obras
-    </footer>
-
-  </section>
-
-</main>
-);
+    </main>
+  );
 }
 
 export default Login;

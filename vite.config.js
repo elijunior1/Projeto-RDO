@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -9,27 +10,20 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
 
+      // Evita ativar o service worker no ambiente de desenvolvimento.
       devOptions: {
-        enabled: true
-      },
-
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,png,svg,ico}"]
+        enabled: false
       },
 
       manifest: {
         name: "Projeto RDO",
         short_name: "RDO",
         description: "Relatório Diário de Obras",
-
         theme_color: "#f59e0b",
         background_color: "#ffffff",
-
         display: "standalone",
         orientation: "portrait",
-
         start_url: "/",
-
         icons: [
           {
             src: "icon-192.png",

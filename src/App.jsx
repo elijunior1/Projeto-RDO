@@ -3,6 +3,8 @@ import {
   useState
 } from "react";
 
+import PushNotificationsButton from "./components/PushNotificationsButton";
+
 import {
   BrowserRouter,
   Routes,
@@ -94,14 +96,15 @@ function LayoutSistema({
   }
 
   return (
-    <AppLayout
-      usuario={usuario}
-      navegar={navegar}
-      voltar={voltar}
-      sair={sair}
-    >
-      {children}
-    </AppLayout>
+  <AppLayout
+    usuario={usuario}
+    navegar={navegar}
+    voltar={voltar}
+    sair={sair}
+  >
+    <PushNotificationsButton usuario={usuario} />
+    {children}
+  </AppLayout>
   );
 
 }

@@ -16,13 +16,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export async function obterMessaging() {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    console.error("FCM: ambiente sem window.");
+    return null;
+  }
+
+  const diagnostico = {
+    httpsSeguro: window.isSecureContext,
+    serviceWorker: "serviceWorker" in navigator,
+    notification: "Notification" in window,
+    pushManager: "PushManager" in window,
+    indexedDB: "indexedDB" in window,
+    fetch: "fetch" in window,
+    firebaseApiKey: Boolean(firebaseConfig.apiKey),
+    firebaseProjectId: Boolean(firebaseConfig.projectId),
+    firebaseAppId: Boolean(firebaseConfig.appId),
+  };
+
+  console.table(diagnostico);
 
   try {
-    if (!(await isSupported())) return null;
+    const suportado = await isSupported();
+
+    console.log("FCM: isSupported() =", suportado);
+
+    if (!suportado) {
+      console.error(
+        "FCM: o Firebase identificou algum recurso incompatível."
+      );
+      return null;
+    }
+
     return getMessaging(app);
   } catch (erro) {
-    console.error("Firebase Messaging indisponível:", erro);
+    console.error("FCM: falha ao inicializar Messaging:", erro);
     return null;
   }
 }

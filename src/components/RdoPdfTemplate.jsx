@@ -10,6 +10,11 @@ function nomeAtividade(atividade) {
     instalacao_modulo: "Instalação de Módulo",
     instalacao_terca: "Instalação de Terça",
     instalacao_telha: "Instalação de Telha",
+    faixas: "Faixas",
+    copinhos: "Copinhos",
+    modulos: "Módulos",
+    tercas: "Terças",
+    manutencao: "Manutenção",
   };
 
   return atividades[ atividade ] || atividade;

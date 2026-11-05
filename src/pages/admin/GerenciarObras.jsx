@@ -202,11 +202,11 @@ function GerenciarObras( {
       } = await supabase
       .from("usuarios")
       .select(
-        "id, nome, email"
+        "id, nome, email, perfil"
       )
-      .eq(
+      .in(
         "perfil",
-        "encarregado"
+        ["encarregado", "pintura"]
       )
       .eq(
         "ativo",
@@ -1144,8 +1144,9 @@ TELA
                     }
                     >
                     {
-                    encarregado.nome
+                      encarregado.nome
                     }
+                    {encarregado.perfil === "pintura" ? " (Pintura)" : ""}
                   </option>
                 )
               )}

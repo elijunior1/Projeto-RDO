@@ -254,7 +254,22 @@ function RelatorioRDO({
         "Instalação de Terça",
 
       instalacao_telha:
-        "Instalação de Telha"
+        "Instalação de Telha",
+
+      faixas:
+        "Faixas",
+
+      copinhos:
+        "Copinhos",
+
+      modulos:
+        "Módulos",
+
+      tercas:
+        "Terças",
+
+      manutencao:
+        "Manutenção"
 
     };
 
@@ -1011,7 +1026,12 @@ function RelatorioRDO({
       {
         chave: "instalacao_telha",
         nome: "Instalação de Telha"
-      }
+      },
+      { chave: "faixas", nome: "Faixas" },
+      { chave: "copinhos", nome: "Copinhos" },
+      { chave: "modulos", nome: "Módulos" },
+      { chave: "tercas", nome: "Terças" },
+      { chave: "manutencao", nome: "Manutenção" }
 
     ];
 
@@ -1201,6 +1221,41 @@ function RelatorioRDO({
           ),
 
           formatarNumero(
+            obterQuantidadeAtividade(
+              rdo,
+              "faixas"
+            )
+          ),
+
+          formatarNumero(
+            obterQuantidadeAtividade(
+              rdo,
+              "copinhos"
+            )
+          ),
+
+          formatarNumero(
+            obterQuantidadeAtividade(
+              rdo,
+              "modulos"
+            )
+          ),
+
+          formatarNumero(
+            obterQuantidadeAtividade(
+              rdo,
+              "tercas"
+            )
+          ),
+
+          formatarNumero(
+            obterQuantidadeAtividade(
+              rdo,
+              "manutencao"
+            )
+          ),
+
+          formatarNumero(
             obterTotalProducao(
               rdo
             )
@@ -1235,6 +1290,11 @@ function RelatorioRDO({
             "Módulo",
             "Terça",
             "Telha",
+            "Faixas",
+            "Copinhos",
+            "Módulos",
+            "Terças",
+            "Manutenção",
             "Total",
             "Presentes",
             "Ausentes"
@@ -1304,19 +1364,39 @@ function RelatorioRDO({
           },
 
           7: {
-            cellWidth: 18
+            cellWidth: 15
           },
 
           8: {
-            cellWidth: 18
+            cellWidth: 15
           },
 
           9: {
-            cellWidth: 18
+            cellWidth: 15
           },
 
           10: {
-            cellWidth: 18
+            cellWidth: 15
+          },
+
+          11: {
+            cellWidth: 15
+          },
+
+          12: {
+            cellWidth: 15
+          },
+
+          13: {
+            cellWidth: 16
+          },
+
+          14: {
+            cellWidth: 16
+          },
+
+          15: {
+            cellWidth: 16
           }
 
         }

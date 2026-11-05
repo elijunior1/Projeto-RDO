@@ -7,6 +7,11 @@ import {
   supabase
 } from "../../supabase.js";
 
+import {
+  obterCamposProducao,
+  producaoInicial
+} from "../../config/producao.js";
+
 import "./FormRDO.css";
 
 function FormRDO({
@@ -52,26 +57,14 @@ function FormRDO({
 
   ] = useState([]);
 
+  const camposProducao = obterCamposProducao(usuario?.perfil);
+
   const [
     producao,
 
     setProducao
 
-  ] = useState({
-
-    escavacao: 0,
-
-    concretagem: 0,
-
-    acabamento: 0,
-
-    instalacaoModulo: 0,
-
-    instalacaoTerca: 0,
-
-    instalacaoTelha: 0,
-
-  });
+  ] = useState(() => producaoInicial(usuario?.perfil));
 
   const [
     motivosBaixaProdutividade,
@@ -131,9 +124,10 @@ function FormRDO({
 
       if (rascunho.producao) {
 
-        setProducao(
-          rascunho.producao
-        );
+        setProducao((producaoAtual) => ({
+          ...producaoAtual,
+          ...rascunho.producao,
+        }));
 
       }
 
@@ -985,114 +979,18 @@ ENVIAR RDO
   ========================================
   */
 
-      const producaoParaSalvar = [ {
+      const producaoParaSalvar = camposProducao
+        .map((campo) => ({
+          atividade: campo.atividade,
+          quantidade: Number(producao[campo.campo] || 0),
+        }))
+        .filter((item) => item.quantidade > 0)
+        .map((item) => ({
+          rdo_id: novaRDO.id,
+          atividade: item.atividade,
+          quantidade: item.quantidade,
+        }));
 
-        atividade:
-
-          "escavacao",
-
-        quantidade:
-
-          producao.escavacao,
-
-      },
-
-
-      {
-
-        atividade:
-
-          "concretagem",
-
-        quantidade:
-
-          producao.concretagem,
-
-      },
-
-
-      {
-
-        atividade:
-
-          "acabamento",
-
-        quantidade:
-
-          producao.acabamento,
-
-      },
-
-
-      {
-
-        atividade:
-
-          "instalacao_modulo",
-
-        quantidade:
-
-          producao.instalacaoModulo,
-
-      },
-
-
-      {
-
-        atividade:
-
-          "instalacao_terca",
-
-        quantidade:
-
-          producao.instalacaoTerca,
-
-      },
-
-
-      {
-
-        atividade:
-
-          "instalacao_telha",
-
-        quantidade:
-
-          producao.instalacaoTelha,
-
-      },
-
-      ]
-
-        .filter(
-
-          item =>
-
-            item.quantidade >
-
-            0
-
-        )
-
-        .map(
-
-          item => ({
-
-            rdo_id:
-
-              novaRDO.id,
-
-            atividade:
-
-              item.atividade,
-
-            quantidade:
-
-              item.quantidade,
-
-          })
-
-        );
 
 
       if (
@@ -1564,246 +1462,21 @@ CARREGANDO
           </h2>
 
 
-          <div className="producao-grid">
-
-            <div className="form-group">
-
-              <label>
-
-                Escavação
-
-              </label>
-
-
-              <input
-
-                type="number"
-
-                min="0"
-
-                value={
-
-                  producao.escavacao
-
-                }
-
-                onChange={
-
-                  event =>
-
-                    alterarProducao(
-
-                      "escavacao",
-
-                      event.target.value
-
-                    )
-
-                }
-
-              />
-
-            </div>
-
-
-            <div className="form-group">
-
-              <label>
-
-                Concretagem
-
-              </label>
-
-
-              <input
-
-                type="number"
-
-                min="0"
-
-                value={
-
-                  producao.concretagem
-
-                }
-
-                onChange={
-
-                  event =>
-
-                    alterarProducao(
-
-                      "concretagem",
-
-                      event.target.value
-
-                    )
-
-                }
-
-              />
-
-            </div>
-
-
-            <div className="form-group">
-
-              <label>
-
-                Acabamento
-
-              </label>
-
-
-              <input
-
-                type="number"
-
-                min="0"
-
-                value={
-
-                  producao.acabamento
-
-                }
-
-                onChange={
-
-                  event =>
-
-                    alterarProducao(
-
-                      "acabamento",
-
-                      event.target.value
-
-                    )
-
-                }
-
-              />
-
-            </div>
-
-
-            <div className="form-group">
-
-              <label>
-
-                Instalação de Módulo
-
-              </label>
-
-
-              <input
-
-                type="number"
-
-                min="0"
-
-                value={
-
-                  producao.instalacaoModulo
-
-                }
-
-                onChange={
-
-                  event =>
-
-                    alterarProducao(
-
-                      "instalacaoModulo",
-
-                      event.target.value
-
-                    )
-
-                }
-
-              />
-
-            </div>
-
-
-            <div className="form-group">
-
-              <label>
-
-                Instalação de Terça
-
-              </label>
-
-
-              <input
-
-                type="number"
-
-                min="0"
-
-                value={
-
-                  producao.instalacaoTerca
-
-                }
-
-                onChange={
-
-                  event =>
-
-                    alterarProducao(
-
-                      "instalacaoTerca",
-
-                      event.target.value
-
-                    )
-
-                }
-
-              />
-
-            </div>
-
-
-            <div className="form-group">
-
-              <label>
-
-                Instalação de Telha
-
-              </label>
-
-
-              <input
-
-                type="number"
-
-                min="0"
-
-                value={
-
-                  producao.instalacaoTelha
-
-                }
-
-                onChange={
-
-                  event =>
-
-                    alterarProducao(
-
-                      "instalacaoTelha",
-
-                      event.target.value
-
-                    )
-
-                }
-
-              />
-
-            </div>
+                    <div className="producao-grid">
+
+            {camposProducao.map((campo) => (
+              <div className="form-group" key={campo.campo}>
+                <label>{campo.label}</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={producao[campo.campo] ?? 0}
+                  onChange={(event) =>
+                    alterarProducao(campo.campo, event.target.value)
+                  }
+                />
+              </div>
+            ))}
 
           </div>
 

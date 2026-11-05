@@ -212,7 +212,22 @@ function ConsultaRDO({
         "Instalação de Terça",
 
       instalacao_telha:
-        "Instalação de Telha"
+        "Instalação de Telha",
+
+      faixas:
+        "Faixas",
+
+      copinhos:
+        "Copinhos",
+
+      modulos:
+        "Módulos",
+
+      tercas:
+        "Terças",
+
+      manutencao:
+        "Manutenção"
 
     };
 

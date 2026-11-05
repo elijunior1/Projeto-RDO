@@ -135,11 +135,11 @@ function HomeAdmin( {
     } = await supabase
     .from("usuarios")
     .select(
-      "id, nome, email"
+      "id, nome, email, perfil"
     )
-    .eq(
+    .in(
       "perfil",
-      "encarregado"
+      ["encarregado", "pintura"]
     )
     .eq(
       "ativo",

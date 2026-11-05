@@ -30,6 +30,8 @@ import SelecionarObraRDO from "./pages/admin/SelecionarObraRDO";
 
 import HomeEncarregado from "./pages/encarregado/HomeEncarregado";
 import FormRDO from "./pages/encarregado/FormRDO";
+import HomePintura from "./pages/pintura/HomePintura";
+import FormRDOPintura from "./pages/pintura/FormRDOPintura";
 import DetalheRDO from "./pages/admin/DetalheRDO";
 import RelatorioRDO from "./pages/admin/RelatorioRDO";
 
@@ -55,7 +57,9 @@ function LayoutSistema({
       home:
         usuario?.perfil === "admin"
           ? "/admin"
-          : "/encarregado",
+          : usuario?.perfil === "pintura"
+            ? "/pintura"
+            : "/encarregado",
 
       "home-admin":
         "/admin",
@@ -79,7 +83,10 @@ function LayoutSistema({
         "/admin/selecionar-rdo",
 
       "form-rdo":
-        "/encarregado/form-rdo"
+        "/encarregado/form-rdo",
+
+      "form-rdo-pintura":
+        "/pintura/form-rdo"
 
     };
 
@@ -762,7 +769,9 @@ function Sistema() {
       home:
         usuario?.perfil === "admin"
           ? "/admin"
-          : "/encarregado",
+          : usuario?.perfil === "pintura"
+            ? "/pintura"
+            : "/encarregado",
 
       "home-admin":
         "/admin",
@@ -786,7 +795,10 @@ function Sistema() {
         "/admin/selecionar-rdo",
 
       "form-rdo":
-        "/encarregado/form-rdo"
+        "/encarregado/form-rdo",
+
+      "form-rdo-pintura":
+        "/pintura/form-rdo"
 
     };
 
@@ -1142,6 +1154,71 @@ function Sistema() {
 
           </>
 
+        )}
+
+        {/* ======================================
+            ENCARREGADO DE PINTURA
+        ====================================== */}
+
+        {usuario.perfil === "pintura" && (
+
+          <>
+
+            <Route
+              path="/pintura"
+              element={
+
+                <HomePintura
+                  usuario={usuario}
+                  obras={obras}
+                  rdos={rdos}
+                  navegar={navegar}
+                  setObraSelecionada={
+                    setObraSelecionada
+                  }
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="/pintura/form-rdo"
+              element={
+
+                <FormRDOPintura
+                  usuario={usuario}
+                  obra={obraSelecionada}
+                  colaboradores={colaboradores}
+                  equipes={equipes}
+                  rdos={rdos}
+                  setRdos={setRdos}
+                  navegar={navegar}
+                  voltar={() => navigate(-1)}
+                  sair={sair}
+                />
+
+              }
+            />
+
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="/pintura"
+                  replace
+                />
+              }
+            />
+
+          </>
+
+        )}
+
+        {usuario.perfil !== "admin" && usuario.perfil !== "encarregado" && usuario.perfil !== "pintura" && (
+          <Route path="*" element={<Navigate to="/login" replace />} />
         )}
 
       </Routes>

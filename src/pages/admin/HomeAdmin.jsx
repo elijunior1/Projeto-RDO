@@ -88,7 +88,7 @@ function HomeAdmin( {
     obras.filter(
       obra =>
       obra.status ===
-      "pausada"
+      "paralisada"
     );
 
 

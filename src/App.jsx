@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState
 } from "react";
 
@@ -10,6 +11,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
   useNavigate
 } from "react-router-dom";
 
@@ -127,6 +129,8 @@ function Sistema() {
 
   const navigate = useNavigate();
 
+  const location = useLocation();
+
 
   const [
     usuario,
@@ -144,6 +148,26 @@ function Sistema() {
     dadosCarregando,
     setDadosCarregando
   ] = useState(false);
+
+
+  // true só depois da PRIMEIRA carga completa de dados. É isso que
+  // permite mostrar a tela cheia de "Carregando..." uma única vez e,
+  // nas próximas vezes (troca de aba, refresh de token...), manter a
+  // tela atual visível — só um indicador pequeno — em vez de trocar a
+  // página inteira por um estado de carregamento.
+  const [
+    dadosJaCarregados,
+    setDadosJaCarregados
+  ] = useState(false);
+
+
+  // id do usuário já carregado nesta sessão. Serve para ignorar
+  // eventos repetidos do Supabase (ex.: TOKEN_REFRESHED ao voltar de
+  // outra aba), que antes disparavam um novo carregamento completo.
+  const usuarioIdCarregadoRef = useRef(null);
+
+
+  const rotaRestauradaRef = useRef(false);
 
 
   const [
@@ -318,6 +342,314 @@ function Sistema() {
 
   /*
   ================================================
+  SALVAR ÚLTIMA ROTA + SCROLL (para voltar onde parou)
+  ================================================
+
+  Quando o navegador mata a aba (muito comum no celular) ou a
+  página recarrega, a rota atual é perdida e o app volta para a
+  home. Guardamos a rota e o scroll no localStorage para restaurar
+  na próxima abertura, sem depender só do bfcache.
+  */
+
+  useEffect(() => {
+
+    if (
+      !usuario ||
+      location.pathname === "/login"
+    ) {
+      return;
+    }
+
+    const rotaAtual =
+      location.pathname +
+      location.search +
+      location.hash;
+
+    try {
+
+      localStorage.setItem(
+        "rdo_ultima_rota",
+        JSON.stringify({
+          rota: rotaAtual,
+          salvaEm: new Date().toISOString()
+        })
+      );
+
+      localStorage.setItem(
+        "rdo_scroll_pos",
+        JSON.stringify({
+          rota: rotaAtual,
+          y: window.scrollY || 0
+        })
+      );
+
+    } catch (erro) {
+
+      // localStorage cheio ou indisponível: o app continua normal.
+      console.error(
+        "Erro ao salvar última rota:",
+        erro
+      );
+
+    }
+
+  }, [
+    usuario,
+    location.pathname,
+    location.search,
+    location.hash
+  ]);
+
+
+  useEffect(() => {
+
+    let timer = null;
+
+    function salvarScroll() {
+
+      const rotaAtual =
+        location.pathname +
+        location.search +
+        location.hash;
+
+      try {
+
+        localStorage.setItem(
+          "rdo_scroll_pos",
+          JSON.stringify({
+            rota: rotaAtual,
+            y: window.scrollY || 0
+          })
+        );
+
+      } catch {
+        // sem ação: é só cache de posição
+      }
+
+    }
+
+    function aoRolar() {
+
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      timer = setTimeout(
+        salvarScroll,
+        150
+      );
+
+    }
+
+    function aoOcultar() {
+
+      if (document.visibilityState === "hidden") {
+        salvarScroll();
+      }
+
+    }
+
+    window.addEventListener(
+      "scroll",
+      aoRolar,
+      { passive: true }
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      aoOcultar
+    );
+
+    window.addEventListener(
+      "beforeunload",
+      salvarScroll
+    );
+
+    window.addEventListener(
+      "pagehide",
+      salvarScroll
+    );
+
+    return () => {
+
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      window.removeEventListener(
+        "scroll",
+        aoRolar
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        aoOcultar
+      );
+
+      window.removeEventListener(
+        "beforeunload",
+        salvarScroll
+      );
+
+      window.removeEventListener(
+        "pagehide",
+        salvarScroll
+      );
+
+    };
+
+  }, [
+    location.pathname,
+    location.search,
+    location.hash
+  ]);
+
+
+  /*
+  ================================================
+  RESTAURAR ÚLTIMA ROTA NA ABERTURA
+  ================================================
+
+  Roda uma única vez, depois que o login e os dados carregaram.
+  Só restaura se a rota salva pertencer ao perfil do usuário.
+  */
+
+  useEffect(() => {
+
+    if (
+      rotaRestauradaRef.current ||
+      carregando ||
+      dadosCarregando ||
+      !usuario
+    ) {
+      return;
+    }
+
+    rotaRestauradaRef.current = true;
+
+    // Se já está numa rota válida (não é "/" nem "/login"),
+    // não mexe em nada: a aba comum já restaurou sozinha.
+    if (
+      location.pathname !== "/" &&
+      location.pathname !== "/login"
+    ) {
+      return;
+    }
+
+    const salva = localStorage.getItem(
+      "rdo_ultima_rota"
+    );
+
+    if (!salva) {
+      return;
+    }
+
+    try {
+
+      const { rota } = JSON.parse(salva);
+
+      if (!rota || rota === "/login") {
+        return;
+      }
+
+      const prefixosPermitidos = {
+        admin: "/admin",
+        encarregado: "/encarregado",
+        pintura: "/pintura"
+      };
+
+      const prefixo = prefixosPermitidos[
+        usuario.perfil
+      ];
+
+      if (
+        prefixo &&
+        !rota.startsWith(prefixo)
+      ) {
+        return;
+      }
+
+      // Só volta se a rota salva não for a home padrão.
+      if (
+        rota !== prefixo
+      ) {
+
+        navigate(rota, {
+          replace: true
+        });
+
+      }
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao restaurar última rota:",
+        erro
+      );
+
+      localStorage.removeItem(
+        "rdo_ultima_rota"
+      );
+
+    }
+
+  }, [
+    usuario,
+    carregando,
+    dadosCarregando,
+    location.pathname,
+    navigate
+  ]);
+
+
+  /*
+  ================================================
+  RESTAURAR SCROLL DA ROTA ATUAL
+  ================================================
+  */
+
+  useEffect(() => {
+
+    const salva = localStorage.getItem(
+      "rdo_scroll_pos"
+    );
+
+    if (!salva) {
+      return;
+    }
+
+    try {
+
+      const { rota, y } = JSON.parse(salva);
+
+      const rotaAtual =
+        location.pathname +
+        location.search +
+        location.hash;
+
+      if (
+        rota === rotaAtual &&
+        typeof y === "number" &&
+        y > 0
+      ) {
+
+        window.scrollTo(0, y);
+
+      }
+
+    } catch {
+      // sem ação
+    }
+
+  }, [
+    location.pathname,
+    location.search,
+    location.hash
+  ]);
+
+
+  /*
+  ================================================
   VERIFICAR SESSÃO
   ================================================
   */
@@ -338,11 +670,39 @@ function Sistema() {
 
           if (sessao?.user) {
 
+            const mesmoUsuario =
+              usuarioIdCarregadoRef.current ===
+              sessao.user.id;
+
+            // Ao voltar de outra aba, o Supabase costuma disparar
+            // TOKEN_REFRESHED / INITIAL_SESSION sem o usuário ter
+            // trocado. Antes, isso chamava carregarDados de novo e
+            // trocava a tela inteira por "Carregando...".
+            // Se é o mesmo usuário já carregado nesta sessão,
+            // só limpamos o indicador e mantemos a tela como está.
+            if (
+              mesmoUsuario &&
+              (
+                evento === "TOKEN_REFRESHED" ||
+                evento === "INITIAL_SESSION"
+              )
+            ) {
+
+              setCarregando(
+                false
+              );
+
+              return;
+
+            }
+
             await carregarUsuario(
               sessao.user
             );
 
           } else {
+
+            usuarioIdCarregadoRef.current = null;
 
             setUsuario(null);
 
@@ -353,6 +713,8 @@ function Sistema() {
             setEquipes([]);
 
             setRdos([]);
+
+            setDadosJaCarregados(false);
 
           }
 
@@ -477,6 +839,9 @@ function Sistema() {
     setUsuario(
       usuarioCompleto
     );
+
+    usuarioIdCarregadoRef.current =
+      usuarioAuth.id;
 
 
     await carregarDados();
@@ -751,6 +1116,10 @@ function Sistema() {
         false
       );
 
+      setDadosJaCarregados(
+        true
+      );
+
     }
 
   }
@@ -855,12 +1224,26 @@ function Sistema() {
 
     setRdos([]);
 
+    setDadosJaCarregados(false);
+
+    usuarioIdCarregadoRef.current = null;
+
+    rotaRestauradaRef.current = false;
+
     localStorage.removeItem(
       "rdo_obra_selecionada"
     );
 
     localStorage.removeItem(
       "rdo_encarregado_selecionado"
+    );
+
+    localStorage.removeItem(
+      "rdo_ultima_rota"
+    );
+
+    localStorage.removeItem(
+      "rdo_scroll_pos"
     );
 
 
@@ -876,13 +1259,18 @@ function Sistema() {
 
   /*
   ================================================
-  CARREGANDO
+  CARREGANDO (primeira abertura)
   ================================================
+
+  A tela cheia de "Carregando..." agora aparece SÓ na primeira
+  carga. Depois disso, recarregar dados (refresh de token, voltar
+  de outra aba etc.) NÃO troca a tela: o conteúdo atual fica
+  visível e só um indicador discreto aparece no topo.
   */
 
   if (
     carregando ||
-    dadosCarregando
+    (dadosCarregando && !dadosJaCarregados)
   ) {
 
     return (
@@ -947,6 +1335,33 @@ function Sistema() {
   */
 
   return (
+
+    <>
+
+      {dadosCarregando && dadosJaCarregados && (
+
+        <div
+          role="status"
+          aria-label="Atualizando dados"
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            zIndex: 1000,
+            background: "#f59e0b",
+            color: "#1f2421",
+            fontSize: "12px",
+            fontWeight: 600,
+            padding: "6px 10px",
+            borderBottomLeftRadius: "8px",
+            borderBottom: "1px solid rgba(0,0,0,0.12)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+          }}
+        >
+          Atualizando...
+        </div>
+
+      )}
 
     <LayoutSistema
       usuario={usuario}
@@ -1224,6 +1639,8 @@ function Sistema() {
       </Routes>
 
     </LayoutSistema>
+
+    </>
 
   );
 

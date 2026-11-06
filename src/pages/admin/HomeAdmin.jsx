@@ -135,23 +135,56 @@ function HomeAdmin( {
     } = await supabase
     .from("usuarios")
     .select(
-      "id, nome, email, perfil"
+      "id, nome, email, perfil, ativo"
     )
-    .in(
-      "perfil",
-      ["encarregado", "pintura"]
-    )
-    .eq(
-      "ativo",
-      true
+    .order(
+      "nome",
+      {
+        ascending: true
+      }
     );
 
 
     if (
       !erroUsuarios
     ) {
+      // O usuário de pintura TAMBÉM é encarregado: ele entra no
+      // contador do dashboard e na lista abaixo. Filtramos no JS
+      // (e não só no banco) para não perder quem tem perfil com
+      // maiúscula/espço ou ativo nulo (cadastrado sem flag).
+      const candidatos = (usuarios || []).filter(
+        (usuarioItem) => {
+          const perfilNormalizado = String(
+            usuarioItem.perfil || ""
+          )
+            .toLowerCase()
+            .trim();
+
+          // Aceita variações comuns: "pintura", "pintor",
+          // "encarregado_pintura", "encarregado-pintura", etc.
+          const ehEncarregado = [
+            "encarregado",
+            "pintura"
+          ].includes(
+            perfilNormalizado
+          ) ||
+            perfilNormalizado.includes("pintura") ||
+            perfilNormalizado.includes("pintor") ||
+            perfilNormalizado.includes("encarregado");
+
+          // Só exclui quem foi explicitamente desativado.
+          // ativo = null conta como ativo.
+          const estaAtivo =
+            usuarioItem.ativo !== false;
+
+          return (
+            ehEncarregado &&
+            estaAtivo
+          );
+        }
+      );
       const lista =
-      usuarios.map(
+      candidatos.map(
         encarregado => {
           const obrasDoEncarregado =
           obras.filter(
@@ -176,6 +209,11 @@ function HomeAdmin( {
 
       setEncarregados(
         lista
+      );
+    } else {
+      console.error(
+        "Erro ao carregar encarregados:",
+        erroUsuarios
       );
     }
 
@@ -363,6 +401,17 @@ function HomeAdmin( {
                   <h3>
                     {encarregado.nome}
                   </h3>
+                  <p>
+                    {
+                      String(
+                        encarregado.perfil || ""
+                      )
+                        .toLowerCase()
+                        .trim() === "pintura"
+                        ? "🎨 Pintura"
+                        : "🏗 Encarregado"
+                    }
+                  </p>
                   <p>
                     Obras:
                     {

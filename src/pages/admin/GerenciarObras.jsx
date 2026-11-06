@@ -197,20 +197,12 @@ function GerenciarObras( {
 
       //ENCARREGADOS
       const {
-        data: encarregadosData,
+        data: encarregadosTodos,
         error: encarregadosError
       } = await supabase
       .from("usuarios")
       .select(
-        "id, nome, email, perfil"
-      )
-      .in(
-        "perfil",
-        ["encarregado", "pintura"]
-      )
-      .eq(
-        "ativo",
-        true
+        "id, nome, email, perfil, ativo"
       )
       .order(
         "nome",
@@ -227,6 +219,34 @@ function GerenciarObras( {
         throw encarregadosError;
 
       }
+
+      // Filtra em JS para não perder pintura com perfil variado
+      // ou ativo nulo (mesmo critério do dashboard).
+      const encarregadosData = (encarregadosTodos || []).filter(
+        (usuarioItem) => {
+          const perfilNormalizado = String(
+            usuarioItem.perfil || ""
+          )
+            .toLowerCase()
+            .trim();
+
+          const ehEncarregado = [
+            "encarregado",
+            "pintura"
+          ].includes(
+            perfilNormalizado
+          );
+
+          // Só exclui quem foi explicitamente desativado.
+          const estaAtivo =
+            usuarioItem.ativo !== false;
+
+          return (
+            ehEncarregado &&
+            estaAtivo
+          );
+        }
+      );
 
 
       /*

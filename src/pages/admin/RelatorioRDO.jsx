@@ -15,6 +15,10 @@ import { jsPDF } from "jspdf";
 
 import autoTable from "jspdf-autotable";
 
+import {
+  exportarRDOsExcel
+} from "../../services/exportExcel.js";
+
 import logoAcodez from "../../assets/logo-acodez.png";
 
 function RelatorioRDO({
@@ -451,6 +455,36 @@ function RelatorioRDO({
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-zA-Z0-9]/g, "_");
+  }
+
+  const [
+    exportandoExcel,
+    setExportandoExcel
+  ] = useState(false);
+
+  async function gerarExcel() {
+    if (!obraSelecionada) {
+      alert("Nenhuma obra selecionada.");
+      return;
+    }
+    if (!rdos.length) {
+      alert("Não existem RDOs no período selecionado.");
+      return;
+    }
+    try {
+      setExportandoExcel(true);
+      await exportarRDOsExcel({
+        rdos,
+        obra: obraSelecionada,
+        dataInicio,
+        dataFim
+      });
+    } catch (erro) {
+      console.error("Erro ao exportar Excel:", erro);
+      alert(erro.message || "Erro ao exportar Excel.");
+    } finally {
+      setExportandoExcel(false);
+    }
   }
 
   function gerarPDF() {
@@ -2260,11 +2294,8 @@ function RelatorioRDO({
 
                 <button
                   className="relatorio-formato"
-                  onClick={() =>
-                    alert(
-                      "Excel será implementado na próxima etapa."
-                    )
-                  }
+                  onClick={gerarExcel}
+                  disabled={exportandoExcel}
                 >
 
                   <span className="relatorio-formato-icon">
@@ -2272,7 +2303,7 @@ function RelatorioRDO({
                   </span>
 
                   <strong>
-                    Gerar Excel
+                    {exportandoExcel ? "Exportando..." : "Gerar Excel"}
                   </strong>
 
                   <small>

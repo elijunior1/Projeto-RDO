@@ -8,6 +8,10 @@ import {
 } from "../../supabase.js";
 
 import {
+  exportarRDOsExcel
+} from "../../services/exportExcel.js";
+
+import {
   useNavigate
 } from "react-router-dom";
 
@@ -28,6 +32,12 @@ function ConsultaRDO({
     carregando,
     setCarregando
   ] = useState(true);
+
+
+  const [
+    exportandoExcel,
+    setExportandoExcel
+  ] = useState(false);
 
 
   /*
@@ -316,6 +326,35 @@ function ConsultaRDO({
 
   /*
   ================================================
+  EXPORTAR EXCEL
+  ================================================
+  */
+
+  async function exportarExcel() {
+
+    if (!rdos.length) {
+      alert("Não existem RDOs para exportar.");
+      return;
+    }
+
+    try {
+      setExportandoExcel(true);
+      await exportarRDOsExcel({
+        rdos,
+        obra
+      });
+    } catch (erro) {
+      console.error("Erro ao exportar Excel:", erro);
+      alert(erro.message || "Erro ao exportar Excel.");
+    } finally {
+      setExportandoExcel(false);
+    }
+
+  }
+
+
+  /*
+  ================================================
   VOLTAR
   ================================================
   */
@@ -470,6 +509,18 @@ function ConsultaRDO({
           </div>
 
         </div>
+
+        {!carregando && rdos.length > 0 && (
+          <div style={{ marginTop: "16px" }}>
+            <button
+              className="btn btn-secondary"
+              onClick={exportarExcel}
+              disabled={exportandoExcel}
+            >
+              {exportandoExcel ? "Exportando..." : "📊 Exportar Excel"}
+            </button>
+          </div>
+        )}
 
       </div>
 

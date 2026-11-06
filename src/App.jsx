@@ -844,7 +844,9 @@ function Sistema() {
       usuarioAuth.id;
 
 
-    await carregarDados();
+    await carregarDados(
+      usuarioCompleto
+    );
 
   }
 
@@ -855,13 +857,30 @@ function Sistema() {
   ================================================
   */
 
-  async function carregarDados() {
+  async function carregarDados(
+    usuarioAtual = null
+  ) {
 
     try {
 
       setDadosCarregando(
         true
       );
+
+      // Escopo por usuário: admin vê tudo; encarregado/pintura
+      // só busca as obras e RDOs dele. Isso reduz tráfego e evita
+      // que o frontend precise filtrar tudo depois.
+      const ehAdmin =
+        usuarioAtual?.perfil === "admin";
+
+      const ehEscopoProprio =
+        !ehAdmin &&
+        Boolean(
+          usuarioAtual?.id
+        );
+
+      const idUsuarioAtual =
+        usuarioAtual?.id || null;
 
 
       /*
@@ -870,32 +889,40 @@ function Sistema() {
       ============================================
       */
 
+      let consultaObras = supabase
+        .from(
+          "rdo_obras"
+        )
+        .select(`
+          *,
+          encarregado:usuarios(
+            id,
+            nome,
+            email
+          ),
+          equipe:rdo_equipes(
+            id,
+            nome
+          )
+        `);
+
+      if (ehEscopoProprio) {
+        consultaObras = consultaObras.eq(
+          "encarregado_id",
+          idUsuarioAtual
+        );
+      }
+
       const {
         data: obrasData,
         error: obrasError
       } =
-        await supabase
-          .from(
-            "rdo_obras"
-          )
-          .select(`
-            *,
-            encarregado:usuarios(
-              id,
-              nome,
-              email
-            ),
-            equipe:rdo_equipes(
-              id,
-              nome
-            )
-          `)
-          .order(
-            "created_at",
-            {
-              ascending: false
-            }
-          );
+        await consultaObras.order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
 
 
       if (obrasError) {
@@ -1029,21 +1056,29 @@ function Sistema() {
       ============================================
       */
 
+      let consultaRdos = supabase
+        .from(
+          "rdos"
+        )
+        .select("*");
+
+      if (ehEscopoProprio) {
+        consultaRdos = consultaRdos.eq(
+          "encarregado_id",
+          idUsuarioAtual
+        );
+      }
+
       const {
         data: rdosData,
         error: rdosError
       } =
-        await supabase
-          .from(
-            "rdos"
-          )
-          .select("*")
-          .order(
-            "data",
-            {
-              ascending: false
-            }
-          );
+        await consultaRdos.order(
+          "data",
+          {
+            ascending: false
+          }
+        );
 
 
       if (rdosError) {

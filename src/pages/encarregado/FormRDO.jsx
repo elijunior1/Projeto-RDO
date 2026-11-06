@@ -351,7 +351,23 @@ CARREGAR COLABORADORES DA OBRA
       const colaboradoresIds =
         new Set();
 
+      /*
+  0. DIVISÃO POR ENCARREGADO (se admin definiu, vale só ela)
+  */
+      let divisaoDefinida = false;
+      try {
+        const { data: divisao, error: divisaoError } = await supabase
+          .from("rdo_obra_encarregado_colaboradores")
+          .select("colaborador_id")
+          .eq("obra_id", obra.id)
+          .eq("encarregado_id", usuario?.id);
+        if (!divisaoError && divisao && divisao.length > 0) {
+          divisaoDefinida = true;
+          divisao.forEach(c => colaboradoresIds.add(c.colaborador_id));
+        }
+      } catch (ignorar) {}
 
+      if (!divisaoDefinida) {
       /*
   ==============================
   1. COLABORADORES INDIVIDUAIS
@@ -454,6 +470,7 @@ CARREGAR COLABORADORES DA OBRA
         );
 
       }
+      } // fim do fallback (sem divisão por encarregado)
 
 
       /*
@@ -838,6 +855,12 @@ ENVIAR RDO
         )
 
         .eq(
+          "encarregado_id",
+
+          usuario.id
+        )
+
+        .eq(
           "data",
 
           dataHoje
@@ -873,7 +896,7 @@ ENVIAR RDO
 
         alert(
 
-          "A RDO desta obra já foi enviada hoje."
+          "Você já enviou a RDO desta obra hoje."
 
         );
 
@@ -1307,14 +1330,16 @@ ENVIAR RDO
       );
 
 
+      const ehDuplicada =
+        erro?.code === "23505" ||
+        /duplicate key|rdos_obra_id_data_key|rdos_uma_por_usuario_por_dia/i.test(
+          erro?.message || ""
+        );
+
       alert(
-
-        `Erro ao enviar RDO: ${erro.message ||
-
-        "Erro desconhecido"
-
-        }`
-
+        ehDuplicada
+          ? "Você já enviou a RDO desta obra hoje."
+          : `Erro ao enviar RDO: ${erro.message || "Erro desconhecido"}`
       );
 
 

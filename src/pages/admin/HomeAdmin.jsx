@@ -129,6 +129,16 @@ function HomeAdmin( {
     }
 
 
+    let vinculosEncarregados = [];
+    try {
+      const { data: vinculosData } = await supabase
+        .from("rdo_obra_encarregados")
+        .select("obra_id, encarregado_id");
+      vinculosEncarregados = vinculosData || [];
+    } catch (ignorar) {
+      vinculosEncarregados = [];
+    }
+
     const {
       data: usuarios,
       error: erroUsuarios
@@ -190,7 +200,10 @@ function HomeAdmin( {
           obras.filter(
             obra =>
             obra.encarregado_id ===
-            encarregado.id
+            encarregado.id ||
+            vinculosEncarregados.some(
+              v => v.obra_id === obra.id && v.encarregado_id === encarregado.id
+            )
           );
 
 

@@ -28,7 +28,8 @@ function HomeEncarregado( {
     () =>
     obras.filter(
       obra =>
-      String(obra.encarregado_id) === String(usuario.id) &&
+      (String(obra.encarregado_id) === String(usuario.id) ||
+        (obra.encarregadosIds || []).map(String).includes(String(usuario.id))) &&
       obra.status === "em_andamento"
     ),
     [obras, usuario.id]
@@ -50,6 +51,7 @@ function HomeEncarregado( {
       rdos.some(
         rdo =>
         String(rdo.obra_id) === String(a.id) &&
+        String(rdo.encarregado_id) === String(usuario.id) &&
         rdo.data === dataHoje
       );
 
@@ -57,6 +59,7 @@ function HomeEncarregado( {
       rdos.some(
         rdo =>
         String(rdo.obra_id) === String(b.id) &&
+        String(rdo.encarregado_id) === String(usuario.id) &&
         rdo.data === dataHoje
       );
 
@@ -82,6 +85,7 @@ function HomeEncarregado( {
 
     return (
       obraPertenceAoEncarregado &&
+      String(rdo.encarregado_id) === String(usuario.id) &&
       rdo.data === dataHoje
     );
   });
@@ -111,6 +115,7 @@ function HomeEncarregado( {
       rdo =>
       String(rdo.obra_id) ===
       String(obraId) &&
+      String(rdo.encarregado_id) === String(usuario.id) &&
       rdo.data === dataHoje
     );
 

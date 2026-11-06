@@ -52,16 +52,24 @@ CARREGAR OBRAS DO ENCARREGADO
       );
 
 
-      const {
-        data,
-        error
-      } = await supabase
+      let obraIdsVinculadas = [];
+      try {
+        const { data: vinculos } = await supabase
+          .from("rdo_obra_encarregados")
+          .select("obra_id")
+          .eq("encarregado_id", encarregado.id);
+        obraIdsVinculadas = (vinculos || []).map(v => v.obra_id);
+      } catch (ignorar) {
+        obraIdsVinculadas = [];
+      }
+
+      let consulta = supabase
       .from(
         "rdo_obras"
       )
       .select(`
         *,
-        encarregado:usuarios(
+        encarregado:usuarios!rdo_obras_encarregado_id_fkey(
         id,
         nome,
         email
@@ -70,12 +78,20 @@ CARREGAR OBRAS DO ENCARREGADO
         id,
         nome
         )
-        `)
-      .eq(
-        "encarregado_id",
-        encarregado.id
-      )
-      .order(
+        `);
+
+      if (obraIdsVinculadas.length > 0) {
+        consulta = consulta.or(
+          `encarregado_id.eq.${encarregado.id},id.in.(${obraIdsVinculadas.join(",")})`
+        );
+      } else {
+        consulta = consulta.eq("encarregado_id", encarregado.id);
+      }
+
+      const {
+        data,
+        error
+      } = await consulta.order(
         "nome_condominio",
         {
           ascending: true

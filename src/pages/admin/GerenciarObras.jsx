@@ -70,9 +70,9 @@ function GerenciarObras( {
   ] = useState("");
 
   const [
-    encarregadoId,
-    setEncarregadoId
-  ] = useState("");
+    encarregadosIds,
+    setEncarregadosIds
+  ] = useState([]);
 
   const [
     equipeId,
@@ -88,6 +88,12 @@ function GerenciarObras( {
     colaboradoresIndividuaisIds,
     setColaboradoresIndividuaisIds
   ] = useState([]);
+
+  // Divisão de funcionários por encarregado: { [encarregadoId]: [colaboradorId, ...] }
+  const [
+    colaboradoresPorEncarregado,
+    setColaboradoresPorEncarregado
+  ] = useState({});
 
   const [
     obraEditando,
@@ -130,7 +136,7 @@ function GerenciarObras( {
       .from("rdo_obras")
       .select(`
         *,
-        encarregado:usuarios(
+        encarregado:usuarios!rdo_obras_encarregado_id_fkey(
         id,
         nome,
         email
@@ -276,6 +282,21 @@ function GerenciarObras( {
 
       /*
   ==============================
+  VÍNCULOS DE ENCARREGADOS (multi-responsável)
+  ==============================
+  */
+      let vinculosEncarregadosData = [];
+      try {
+        const { data } = await supabase
+          .from("rdo_obra_encarregados")
+          .select("obra_id, encarregado_id");
+        vinculosEncarregadosData = data || [];
+      } catch (ignorar) {
+        vinculosEncarregadosData = [];
+      }
+
+      /*
+  ==============================
   ADICIONAR COLABORADORES ÀS OBRAS
   ==============================
   */
@@ -296,12 +317,21 @@ function GerenciarObras( {
             vinculo.colaborador_id
           );
 
+          const encarregadosIdsObra = [
+            ...new Set([
+              ...(vinculosEncarregadosData || [])
+                .filter(v => v.obra_id === obra.id)
+                .map(v => v.encarregado_id),
+              ...(obra.encarregado_id ? [obra.encarregado_id] : []),
+            ]),
+          ];
 
           return {
 
             ...obra,
 
-            colaboradoresIds
+            colaboradoresIds,
+            encarregadosIds: encarregadosIdsObra,
 
           };
 
@@ -424,11 +454,13 @@ LIMPAR FORMULÁRIO
 
     setDataFinalizacao("");
 
-    setEncarregadoId("");
+    setEncarregadosIds([]);
 
     setEquipeId("");
 
     setColaboradoresIndividuaisIds([]);
+
+    setColaboradoresPorEncarregado({});
 
     setStatus("em_andamento");
 
@@ -477,6 +509,17 @@ VERIFICAR COLABORADOR NA EQUIPE
 SELECIONAR COLABORADOR INDIVIDUAL
 
 */
+
+  function alternarColaboradorPorEncarregado(encarregadoId, colaboradorId) {
+    const key = String(encarregadoId);
+    setColaboradoresPorEncarregado(prev => {
+      const atual = prev[key] || [];
+      const novo = atual.includes(colaboradorId)
+        ? atual.filter(id => id !== colaboradorId)
+        : [...atual, colaboradorId];
+      return { ...prev, [key]: novo };
+    });
+  }
 
   function alternarColaboradorIndividual(
     colaboradorId
@@ -562,6 +605,34 @@ EDITAR OBRA
 
       }
 
+      // Vínculos de encarregados (tabela nova). Se ainda não existem
+      // ou a query falhar, cai para o campo único legado.
+      let vinculosEncarregados = [];
+      try {
+        const { data: vinculosEncData } = await supabase
+          .from("rdo_obra_encarregados")
+          .select("encarregado_id")
+          .eq("obra_id", obra.id);
+        vinculosEncarregados = vinculosEncData || [];
+      } catch (ignorar) {
+        vinculosEncarregados = [];
+      }
+
+      // Divisão de funcionários por encarregado
+      let mapaPorEncarregado = {};
+      try {
+        const { data: vinculosDivData } = await supabase
+          .from("rdo_obra_encarregado_colaboradores")
+          .select("encarregado_id, colaborador_id")
+          .eq("obra_id", obra.id);
+        (vinculosDivData || []).forEach(v => {
+          const key = String(v.encarregado_id);
+          if (!mapaPorEncarregado[key]) mapaPorEncarregado[key] = [];
+          mapaPorEncarregado[key].push(v.colaborador_id);
+        });
+      } catch (ignorar) {
+        mapaPorEncarregado = {};
+      }
 
       setObraEditando(
         obra
@@ -591,10 +662,13 @@ EDITAR OBRA
         obra.status || "em_andamento"
       );
 
-      setEncarregadoId(
-        obra.encarregado_id
-        ? String(obra.encarregado_id): ""
-      );
+      setEncarregadosIds([
+        ...new Set([
+          ...vinculosEncarregados.map(v => String(v.encarregado_id)),
+          ...(obra.encarregado_id ? [String(obra.encarregado_id)] : []),
+          ...(obra.encarregadosIds || []).map(String),
+        ]),
+      ]);
 
 
       setEquipeId(
@@ -613,6 +687,7 @@ EDITAR OBRA
         )
       );
 
+      setColaboradoresPorEncarregado(mapaPorEncarregado);
 
       setMostrarFormulario(
         true
@@ -650,6 +725,29 @@ EDITAR OBRA
 SALVAR OBRA
 
 */
+
+  async function sincronizarColaboradoresPorEncarregado(obraId) {
+    try {
+      await supabase
+        .from("rdo_obra_encarregado_colaboradores")
+        .delete()
+        .eq("obra_id", obraId);
+      const linhas = [];
+      Object.entries(colaboradoresPorEncarregado || {}).forEach(([encarregadoId, colIds]) => {
+        (colIds || []).forEach(colaboradorId => {
+          linhas.push({ obra_id: obraId, encarregado_id: encarregadoId, colaborador_id: colaboradorId });
+        });
+      });
+      if (linhas.length > 0) {
+        const { error } = await supabase
+          .from("rdo_obra_encarregado_colaboradores")
+          .insert(linhas);
+        if (error) throw error;
+      }
+    } catch (erroVinculos) {
+      console.warn("Divisão de funcionários não sincronizada (rode supabase/dividir_funcionarios.sql):", erroVinculos);
+    }
+  }
 
   async function cadastrarObra(event) {
 
@@ -701,7 +799,7 @@ SALVAR OBRA
           data_finalizacao: dataFinalizacao,
 
           encarregado_id:
-          encarregadoId || null,
+          encarregadosIds[0] || null,
 
           equipe_id: equipeId
           ? Number(equipeId): null,
@@ -739,6 +837,29 @@ SALVAR OBRA
 
         }
 
+        // Sincronizar vínculos de encarregados (multi-responsável)
+        try {
+          await supabase
+            .from("rdo_obra_encarregados")
+            .delete()
+            .eq("obra_id", obraEditando.id);
+          if (encarregadosIds.length > 0) {
+            const { error: vinculosEncError } = await supabase
+              .from("rdo_obra_encarregados")
+              .insert(
+                encarregadosIds.map(encarregadoId => ({
+                  obra_id: obraEditando.id,
+                  encarregado_id: encarregadoId,
+                }))
+              );
+            if (vinculosEncError) throw vinculosEncError;
+          }
+        } catch (erroVinculos) {
+          console.warn("Vínculos de encarregados não sincronizados (rode o SQL multi_encarregados):", erroVinculos);
+        }
+
+        await sincronizarColaboradoresPorEncarregado(obraEditando.id);
+
         await carregarDados();
 
         limparFormulario();
@@ -767,7 +888,7 @@ SALVAR OBRA
         data_finalizacao: dataFinalizacao,
 
         encarregado_id:
-        encarregadoId || null,
+        encarregadosIds[0] || null,
 
         equipe_id: equipeId
         ? Number(equipeId): null,
@@ -800,6 +921,25 @@ SALVAR OBRA
         if (vinculosError) throw vinculosError;
 
       }
+
+      // Vínculos de encarregados (multi-responsável)
+      if (encarregadosIds.length > 0) {
+        try {
+          const { error: vinculosEncError } = await supabase
+            .from("rdo_obra_encarregados")
+            .insert(
+              encarregadosIds.map(encarregadoId => ({
+                obra_id: novaObra.id,
+                encarregado_id: encarregadoId,
+              }))
+            );
+          if (vinculosEncError) throw vinculosEncError;
+        } catch (erroVinculos) {
+          console.warn("Vínculos de encarregados não sincronizados (rode o SQL multi_encarregados):", erroVinculos);
+        }
+      }
+
+      await sincronizarColaboradoresPorEncarregado(novaObra.id);
 
       await carregarDados();
 
@@ -935,6 +1075,16 @@ EXCLUIR OBRA
 
       }
 
+      try {
+        await supabase
+          .from("rdo_obra_encarregados")
+          .delete()
+          .eq("obra_id", obra.id);
+        await supabase
+          .from("rdo_obra_encarregado_colaboradores")
+          .delete()
+          .eq("obra_id", obra.id);
+      } catch (ignorar) {}
 
       /*
   ==============================================
@@ -1140,37 +1290,38 @@ TELA
               required
               />
           </div>
-          <div className="form-group">
+          <div className="form-group form-group-full">
             <label>
-              Encarregado responsável
+              Encarregados responsáveis (pode marcar mais de um)
             </label>
-            <select
-              value={encarregadoId}
-              onChange={event =>
-              setEncarregadoId(event.target.value)
-              }
-              >
-              <option value="">
-                Sem encarregado responsável
-              </option>
-              {encarregados.map(
-                encarregado => (
-                  <option
-                    key={
-                    encarregado.id
-                    }
-                    value={
-                    encarregado.id
-                    }
-                    >
-                    {
-                      encarregado.nome
-                    }
-                    {encarregado.perfil === "pintura" ? " (Pintura)" : ""}
-                  </option>
-                )
-              )}
-            </select>
+            {encarregados.length === 0 ? (
+              <p>Nenhum encarregado cadastrado.</p>
+            ) : (
+              <div className="selection-list">
+                {encarregados.map(encarregado => (
+                  <label
+                    key={encarregado.id}
+                    className="selection-item"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={encarregadosIds.includes(encarregado.id)}
+                      onChange={() =>
+                        setEncarregadosIds(prev =>
+                          prev.includes(encarregado.id)
+                            ? prev.filter(id => id !== encarregado.id)
+                            : [...prev, encarregado.id]
+                        )
+                      }
+                    />
+                    <span>
+                      {encarregado.nome}
+                      {encarregado.perfil === "pintura" ? " (Pintura)" : ""}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
           <div className="form-group form-group-full">
             <label>
@@ -1376,6 +1527,39 @@ TELA
     </div>
   )}
 </div>
+
+{encarregadosIds.length > 1 && (
+  <div className="form-group form-group-full">
+    <label>
+      Funcionários por encarregado
+    </label>
+    <p>
+      Se marcar funcionários abaixo, cada encarregado verá <strong>só</strong> os dele no RDO.
+      Se deixar vazio, vale a equipe/colaboradores acima para todos.
+    </p>
+    {encarregadosIds.map(encarregadoId => {
+      const enc = encarregados.find(e => String(e.id) === String(encarregadoId));
+      const selecionados = colaboradoresPorEncarregado[String(encarregadoId)] || [];
+      return (
+        <div key={encarregadoId} style={{ marginTop: 12 }}>
+          <strong>{enc?.nome || "Encarregado"}{enc?.perfil === "pintura" ? " (Pintura)" : ""} — {selecionados.length} funcionário(s)</strong>
+          <div className="selection-list">
+            {colaboradores.map(colaborador => (
+              <label key={colaborador.id} className="selection-item">
+                <input
+                  type="checkbox"
+                  checked={selecionados.includes(colaborador.id)}
+                  onChange={() => alternarColaboradorPorEncarregado(encarregadoId, colaborador.id)}
+                />
+                <span>{colaborador.nome}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
 </div>
 <div className="form-actions">
 <button
@@ -1498,7 +1682,11 @@ obra.status === "em_andamento"
 </div>
 
 <p>
-👷 {obra.encarregado?.nome || "Sem encarregado"}
+👷 {(
+(obra.encarregadosIds && obra.encarregadosIds.length > 0 ? obra.encarregadosIds : (obra.encarregado_id ? [obra.encarregado_id] : []))
+.map(id => encarregados.find(e => String(e.id) === String(id))?.nome)
+.filter(Boolean)
+).join(", ") || obra.encarregado?.nome || "Sem encarregado"}
 </p>
 
 <p>

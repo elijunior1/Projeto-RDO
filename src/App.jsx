@@ -895,7 +895,7 @@ function Sistema() {
         )
         .select(`
           *,
-          encarregado:usuarios(
+          encarregado:usuarios!rdo_obras_encarregado_id_fkey(
             id,
             nome,
             email
@@ -906,11 +906,31 @@ function Sistema() {
           )
         `);
 
+      // Obras onde sou o 2º+ encarregado (vínculo múltiplo)
+      let obraIdsVinculadas = [];
       if (ehEscopoProprio) {
-        consultaObras = consultaObras.eq(
-          "encarregado_id",
-          idUsuarioAtual
-        );
+        try {
+          const { data: vinculos } = await supabase
+            .from("rdo_obra_encarregados")
+            .select("obra_id")
+            .eq("encarregado_id", idUsuarioAtual);
+          obraIdsVinculadas = (vinculos || []).map(v => v.obra_id);
+        } catch (ignorar) {
+          obraIdsVinculadas = [];
+        }
+      }
+
+      if (ehEscopoProprio) {
+        if (obraIdsVinculadas.length > 0) {
+          consultaObras = consultaObras.or(
+            `encarregado_id.eq.${idUsuarioAtual},id.in.(${obraIdsVinculadas.join(",")})`
+          );
+        } else {
+          consultaObras = consultaObras.eq(
+            "encarregado_id",
+            idUsuarioAtual
+          );
+        }
       }
 
       const {
@@ -931,6 +951,29 @@ function Sistema() {
 
       }
 
+      // Anexar encarregadosIds (vínculo múltiplo + legado)
+      let vinculosEncObras = [];
+      try {
+        const idsObras = (obrasData || []).map(o => o.id);
+        if (idsObras.length > 0) {
+          const { data } = await supabase
+            .from("rdo_obra_encarregados")
+            .select("obra_id, encarregado_id")
+            .in("obra_id", idsObras);
+          vinculosEncObras = data || [];
+        }
+      } catch (ignorar) {
+        vinculosEncObras = [];
+      }
+      const obrasComEncarregados = (obrasData || []).map(obra => ({
+        ...obra,
+        encarregadosIds: [
+          ...new Set([
+            ...vinculosEncObras.filter(v => v.obra_id === obra.id).map(v => v.encarregado_id),
+            ...(obra.encarregado_id ? [obra.encarregado_id] : []),
+          ]),
+        ],
+      }));
 
       /*
       ============================================
@@ -1095,7 +1138,7 @@ function Sistema() {
       */
 
       setObras(
-        obrasData || []
+        obrasComEncarregados || []
       );
 
 

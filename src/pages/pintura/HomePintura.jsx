@@ -22,7 +22,8 @@ function HomePintura({
     () =>
       obras.filter(
         (obra) =>
-          String(obra.encarregado_id) === String(usuario.id) &&
+          (String(obra.encarregado_id) === String(usuario.id) ||
+            (obra.encarregadosIds || []).map(String).includes(String(usuario.id))) &&
           obra.status === "em_andamento"
       ),
     [obras, usuario.id]
@@ -39,11 +40,15 @@ function HomePintura({
         .sort((a, b) => {
           const aTemRdo = rdos.some(
             (rdo) =>
-              String(rdo.obra_id) === String(a.id) && rdo.data === dataHoje
+              String(rdo.obra_id) === String(a.id) &&
+              String(rdo.encarregado_id) === String(usuario.id) &&
+              rdo.data === dataHoje
           );
           const bTemRdo = rdos.some(
             (rdo) =>
-              String(rdo.obra_id) === String(b.id) && rdo.data === dataHoje
+              String(rdo.obra_id) === String(b.id) &&
+              String(rdo.encarregado_id) === String(usuario.id) &&
+              rdo.data === dataHoje
           );
           return aTemRdo - bTemRdo;
         }),
@@ -54,7 +59,11 @@ function HomePintura({
     const obraPertenceAoEncarregado = minhasObras.some(
       (obra) => String(obra.id) === String(rdo.obra_id)
     );
-    return obraPertenceAoEncarregado && rdo.data === dataHoje;
+    return (
+      obraPertenceAoEncarregado &&
+      String(rdo.encarregado_id) === String(usuario.id) &&
+      rdo.data === dataHoje
+    );
   });
 
   const rdosEnviadasHoje = rdosDeHoje.length;
@@ -68,7 +77,10 @@ function HomePintura({
 
   function obraTemRDOHoje(obraId) {
     return rdos.some(
-      (rdo) => String(rdo.obra_id) === String(obraId) && rdo.data === dataHoje
+      (rdo) =>
+        String(rdo.obra_id) === String(obraId) &&
+        String(rdo.encarregado_id) === String(usuario.id) &&
+        rdo.data === dataHoje
     );
   }
 

@@ -1,299 +1,145 @@
-import {
-  useEffect,
-  useState
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  supabase
-} from "../../supabase.js";
+import { supabase } from "../../supabase.js";
 
 import "./GerenciarObras.css";
 
-function GerenciarObras( {
-  navegar,
-  sair,
-}) {
+function GerenciarObras() {
+  const [obras, setObras] = useState([]);
 
-  const [
-    obras,
-    setObras
-  ] = useState([]);
+  const [equipes, setEquipes] = useState([]);
 
-  const [
-    equipes,
-    setEquipes
-  ] = useState([]);
+  const [colaboradores, setColaboradores] = useState([]);
 
-  const [
-    colaboradores,
-    setColaboradores
-  ] = useState([]);
+  const [encarregados, setEncarregados] = useState([]);
 
-  const [
-    encarregados,
-    setEncarregados
-  ] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
-  const [
-    carregando,
-    setCarregando
-  ] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
-  const [
-    salvando,
-    setSalvando
-  ] = useState(false);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  const [
-    mostrarFormulario,
-    setMostrarFormulario
-  ] = useState(false);
+  const [nomeCondominio, setNomeCondominio] = useState("");
 
-  const [
-    nomeCondominio,
-    setNomeCondominio
-  ] = useState("");
+  const [endereco, setEndereco] = useState("");
 
-  const [
-    endereco,
-    setEndereco
-  ] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
 
-  const [
-    dataInicio,
-    setDataInicio
-  ] = useState("");
+  const [dataFinalizacao, setDataFinalizacao] = useState("");
 
-  const [
-    dataFinalizacao,
-    setDataFinalizacao
-  ] = useState("");
+  const [encarregadosIds, setEncarregadosIds] = useState([]);
 
-  const [
-    encarregadosIds,
-    setEncarregadosIds
-  ] = useState([]);
+  const [menuEncarregadosAberto, setMenuEncarregadosAberto] = useState(false);
 
-  const [
-    equipeId,
-    setEquipeId
-  ] = useState("");
+  const [equipeId, setEquipeId] = useState("");
 
-  const [
-    status,
-    setStatus
-  ] = useState("em_andamento");
+  const [status, setStatus] = useState("em_andamento");
 
-  const [
-    colaboradoresIndividuaisIds,
-    setColaboradoresIndividuaisIds
-  ] = useState([]);
+  const [colaboradoresIndividuaisIds, setColaboradoresIndividuaisIds] =
+    useState([]);
 
   // Divisão de funcionários por encarregado: { [encarregadoId]: [colaboradorId, ...] }
-  const [
-    colaboradoresPorEncarregado,
-    setColaboradoresPorEncarregado
-  ] = useState({});
+  const [colaboradoresPorEncarregado, setColaboradoresPorEncarregado] =
+    useState({});
 
-  const [
-    obraEditando,
-    setObraEditando
-  ] = useState(null);
+  const [obraEditando, setObraEditando] = useState(null);
 
-  const [
-    excluindoId,
-    setExcluindoId
-  ] = useState(null);
+  const [busca, setBusca] = useState("");
 
-  const [
-    busca,
-    setBusca
-  ] = useState("");
-
-  const obrasFiltradas =
-  obras.filter(
-    obra =>
-    obra.nome_condominio
-    .toLowerCase()
-    .includes(
-      busca.toLowerCase()
+  // Ordem: em andamento > paralisadas > finalizadas,
+  // dentro de cada status a mais antiga (data de início) primeiro.
+  const ordemStatus = { em_andamento: 0, paralisada: 1, finalizada: 2 };
+  const obrasFiltradas = obras
+    .filter((obra) =>
+      obra.nome_condominio.toLowerCase().includes(busca.toLowerCase()),
     )
-  );
+    .sort((a, b) => {
+      const statusA = ordemStatus[a.status] ?? 3;
+      const statusB = ordemStatus[b.status] ?? 3;
+      if (statusA !== statusB) return statusA - statusB;
+      const dataA = new Date(a.data_inicio || "9999-12-31").getTime();
+      const dataB = new Date(b.data_inicio || "9999-12-31").getTime();
+      return dataA - dataB;
+    });
 
   //CARREGAR DADOS
   useEffect(() => {
+    // Sempre abre no topo, mostrando os cards de resumo
+    window.scrollTo({ top: 0, behavior: "instant" });
     carregarDados();
   }, []);
   async function carregarDados() {
     try {
       setCarregando(true);
 
-      // OBRAS
-      const {
-        data: obrasData,
-        error: obrasError
-      } = await supabase
-      .from("rdo_obras")
-      .select(`
-        *,
-        encarregado:usuarios!rdo_obras_encarregado_id_fkey(
-        id,
-        nome,
-        email
-        ),
-        equipe:rdo_equipes(
-        id,
-        nome
-        )
-        `)
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-      if (
-        obrasError
-      ) {
-        throw obrasError;
-      }
+      // Todas as consultas em PARALELO (antes eram 7 em sequência,
+      // somando a latência de cada uma no carregamento da tela).
+      const [
+        { data: obrasData, error: obrasError },
+        { data: equipesData, error: equipesError },
+        { data: colaboradoresData, error: colaboradoresError },
+        { data: encarregadosTodos, error: encarregadosError },
+        { data: vinculosData, error: vinculosError },
+        { data: vinculosEncData },
+        { data: membrosEquipesData, error: membrosEquipesError },
+      ] = await Promise.all([
+        supabase
+          .from("rdo_obras")
+          .select(
+            "id, nome_condominio, endereco, data_inicio, data_finalizacao, status, encarregado_id, equipe_id, created_at, encarregado:usuarios!rdo_obras_encarregado_id_fkey(id, nome, email), equipe:rdo_equipes(id, nome)",
+          )
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("rdo_equipes")
+          .select("*")
+          .order("nome", { ascending: true }),
+        supabase
+          .from("rdo_colaboradores")
+          .select("id, nome, tipo, ativo")
+          .eq("ativo", true)
+          .order("nome", { ascending: true }),
+        supabase
+          .from("usuarios")
+          .select("id, nome, email, perfil, ativo")
+          .order("nome", { ascending: true }),
+        supabase
+          .from("rdo_obra_colaboradores")
+          .select("obra_id, colaborador_id"),
+        supabase
+          .from("rdo_obra_encarregados")
+          .select("obra_id, encarregado_id"),
+        supabase
+          .from("rdo_equipe_colaboradores")
+          .select("equipe_id, colaborador_id"),
+      ]);
 
-      // EQUIPES
-      const {
-        data: equipesData,
-        error: equipesError
-      } = await supabase
-      .from("rdo_equipes")
-      .select("*")
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
-      if (
-        equipesError
-      ) {
-        throw equipesError;
-      }
-
-      // COLABORADORES
-      const {
-        data: colaboradoresData,
-        error: colaboradoresError
-      } = await supabase
-      .from("rdo_colaboradores")
-      .select("*")
-      .eq(
-        "ativo",
-        true
-      )
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
-      if (
-        colaboradoresError
-      ) {
-        throw colaboradoresError;
-      }
-
-
-      //ENCARREGADOS
-      const {
-        data: encarregadosTodos,
-        error: encarregadosError
-      } = await supabase
-      .from("usuarios")
-      .select(
-        "id, nome, email, perfil, ativo"
-      )
-      .order(
-        "nome",
-        {
-          ascending: true
-        }
-      );
-
-
-      if (
-        encarregadosError
-      ) {
-
-        throw encarregadosError;
-
-      }
+      if (obrasError) throw obrasError;
+      if (equipesError) throw equipesError;
+      if (colaboradoresError) throw colaboradoresError;
+      if (encarregadosError) throw encarregadosError;
+      if (vinculosError) throw vinculosError;
+      if (membrosEquipesError) throw membrosEquipesError;
+      // vínculos de encarregados: se a tabela não existir, segue sem eles
+      const vinculosEncarregadosData = vinculosEncData || [];
 
       // Filtra em JS para não perder pintura com perfil variado
       // ou ativo nulo (mesmo critério do dashboard).
       const encarregadosData = (encarregadosTodos || []).filter(
         (usuarioItem) => {
-          const perfilNormalizado = String(
-            usuarioItem.perfil || ""
-          )
+          const perfilNormalizado = String(usuarioItem.perfil || "")
             .toLowerCase()
             .trim();
 
-          const ehEncarregado = [
-            "encarregado",
-            "pintura"
-          ].includes(
-            perfilNormalizado
+          const ehEncarregado = ["encarregado", "pintura"].includes(
+            perfilNormalizado,
           );
 
           // Só exclui quem foi explicitamente desativado.
-          const estaAtivo =
-            usuarioItem.ativo !== false;
+          const estaAtivo = usuarioItem.ativo !== false;
 
-          return (
-            ehEncarregado &&
-            estaAtivo
-          );
-        }
+          return ehEncarregado && estaAtivo;
+        },
       );
-
-
-      /*
-  ==============================
-  VÍNCULOS DE COLABORADORES
-  ==============================
-  */
-
-      const {
-        data: vinculosData,
-        error: vinculosError
-      } = await supabase
-      .from("rdo_obra_colaboradores")
-      .select(
-        "obra_id, colaborador_id"
-      );
-
-
-      if (
-        vinculosError
-      ) {
-
-        throw vinculosError;
-
-      }
-
-
-      /*
-  ==============================
-  VÍNCULOS DE ENCARREGADOS (multi-responsável)
-  ==============================
-  */
-      let vinculosEncarregadosData = [];
-      try {
-        const { data } = await supabase
-          .from("rdo_obra_encarregados")
-          .select("obra_id, encarregado_id");
-        vinculosEncarregadosData = data || [];
-      } catch (ignorar) {
-        vinculosEncarregadosData = [];
-      }
 
       /*
   ==============================
@@ -301,43 +147,27 @@ function GerenciarObras( {
   ==============================
   */
 
-      const obrasComColaboradores =
-      (obrasData || []).map(
-        obra => {
+      const obrasComColaboradores = (obrasData || []).map((obra) => {
+        const colaboradoresIds = (vinculosData || [])
+          .filter((vinculo) => vinculo.obra_id === obra.id)
+          .map((vinculo) => vinculo.colaborador_id);
 
-          const colaboradoresIds =
-          (vinculosData || [])
-          .filter(
-            vinculo =>
-            vinculo.obra_id ===
-            obra.id
-          )
-          .map(
-            vinculo =>
-            vinculo.colaborador_id
-          );
+        const encarregadosIdsObra = [
+          ...new Set([
+            ...(vinculosEncarregadosData || [])
+              .filter((v) => v.obra_id === obra.id)
+              .map((v) => v.encarregado_id),
+            ...(obra.encarregado_id ? [obra.encarregado_id] : []),
+          ]),
+        ];
 
-          const encarregadosIdsObra = [
-            ...new Set([
-              ...(vinculosEncarregadosData || [])
-                .filter(v => v.obra_id === obra.id)
-                .map(v => v.encarregado_id),
-              ...(obra.encarregado_id ? [obra.encarregado_id] : []),
-            ]),
-          ];
+        return {
+          ...obra,
 
-          return {
-
-            ...obra,
-
-            colaboradoresIds,
-            encarregadosIds: encarregadosIdsObra,
-
-          };
-
-        }
-      );
-
+          colaboradoresIds,
+          encarregadosIds: encarregadosIdsObra,
+        };
+      });
 
       /*
   ==============================
@@ -345,97 +175,32 @@ function GerenciarObras( {
   ==============================
   */
 
-      const {
-        data: membrosEquipesData,
-        error: membrosEquipesError
-      } = await supabase
-      .from("rdo_equipe_colaboradores")
-      .select(
-        "equipe_id, colaborador_id"
-      );
+      const equipesComColaboradores = (equipesData || []).map((equipe) => {
+        const colaboradoresIds = (membrosEquipesData || [])
+          .filter((membro) => membro.equipe_id === equipe.id)
+          .map((membro) => membro.colaborador_id);
 
+        return {
+          ...equipe,
 
-      if (
-        membrosEquipesError
-      ) {
+          colaboradoresIds,
+        };
+      });
 
-        throw membrosEquipesError;
+      setObras(obrasComColaboradores);
 
-      }
+      setEquipes(equipesComColaboradores);
 
-      const equipesComColaboradores =
-      (equipesData || []).map(
-        equipe => {
+      setColaboradores(colaboradoresData || []);
 
-          const colaboradoresIds =
-          (membrosEquipesData || [])
-          .filter(
-            membro =>
-            membro.equipe_id ===
-            equipe.id
-          )
-          .map(
-            membro =>
-            membro.colaborador_id
-          );
+      setEncarregados(encarregadosData || []);
+    } catch (erro) {
+      console.error("Erro ao carregar dados:", erro);
 
-
-          return {
-
-            ...equipe,
-
-            colaboradoresIds
-
-          };
-
-        }
-      );
-
-
-      setObras(
-        obrasComColaboradores
-      );
-
-
-      setEquipes(
-        equipesComColaboradores
-      );
-
-
-      setColaboradores(
-        colaboradoresData || []
-      );
-
-
-      setEncarregados(
-        encarregadosData || []
-      );
-
-
-    } catch (
-      erro
-    ) {
-
-      console.error(
-        "Erro ao carregar dados:",
-        erro
-      );
-
-
-      alert(
-        erro.message ||
-        "Erro ao carregar os dados das obras."
-      );
-
-
+      alert(erro.message || "Erro ao carregar os dados das obras.");
     } finally {
-
-      setCarregando(
-        false
-      );
-
+      setCarregando(false);
     }
-
   }
 
   /*
@@ -445,7 +210,6 @@ LIMPAR FORMULÁRIO
 */
 
   function limparFormulario() {
-
     setNomeCondominio("");
 
     setEndereco("");
@@ -465,7 +229,6 @@ LIMPAR FORMULÁRIO
     setStatus("em_andamento");
 
     setObraEditando(null);
-
   }
 
   /*
@@ -474,34 +237,16 @@ VERIFICAR COLABORADOR NA EQUIPE
 
 */
 
-  function colaboradorPertenceAEquipeSelecionada(
-    colaboradorId
-  ) {
-
-    const equipeSelecionada =
-    equipes.find(
-      equipe =>
-      equipe.id ===
-      Number(equipeId)
+  function colaboradorPertenceAEquipeSelecionada(colaboradorId) {
+    const equipeSelecionada = equipes.find(
+      (equipe) => equipe.id === Number(equipeId),
     );
 
-
-    if (
-      !equipeSelecionada
-    ) {
-
+    if (!equipeSelecionada) {
       return false;
-
     }
 
-
-    return (
-      equipeSelecionada.colaboradoresIds ||
-      []
-    ).includes(
-      colaboradorId
-    );
-
+    return (equipeSelecionada.colaboradoresIds || []).includes(colaboradorId);
   }
 
   /*
@@ -512,61 +257,31 @@ SELECIONAR COLABORADOR INDIVIDUAL
 
   function alternarColaboradorPorEncarregado(encarregadoId, colaboradorId) {
     const key = String(encarregadoId);
-    setColaboradoresPorEncarregado(prev => {
+    setColaboradoresPorEncarregado((prev) => {
       const atual = prev[key] || [];
       const novo = atual.includes(colaboradorId)
-        ? atual.filter(id => id !== colaboradorId)
+        ? atual.filter((id) => id !== colaboradorId)
         : [...atual, colaboradorId];
       return { ...prev, [key]: novo };
     });
   }
 
-  function alternarColaboradorIndividual(
-    colaboradorId
-  ) {
-
-    if (
-      colaboradoresIndividuaisIds.includes(
-        colaboradorId
-      )
-    ) {
-
-      setColaboradoresIndividuaisIds(
-        ids =>
-        ids.filter(
-          id =>
-          id !==
-          colaboradorId
-        )
+  function alternarColaboradorIndividual(colaboradorId) {
+    if (colaboradoresIndividuaisIds.includes(colaboradorId)) {
+      setColaboradoresIndividuaisIds((ids) =>
+        ids.filter((id) => id !== colaboradorId),
       );
 
       return;
-
     }
 
-
-    if (
-      colaboradorPertenceAEquipeSelecionada(
-        colaboradorId
-      )
-    ) {
-
-      alert(
-        "Este colaborador já pertence à equipe selecionada."
-      );
+    if (colaboradorPertenceAEquipeSelecionada(colaboradorId)) {
+      alert("Este colaborador já pertence à equipe selecionada.");
 
       return;
-
     }
 
-
-    setColaboradoresIndividuaisIds(
-      ids => [
-        ...ids,
-        colaboradorId
-      ]
-    );
-
+    setColaboradoresIndividuaisIds((ids) => [...ids, colaboradorId]);
   }
 
   /*
@@ -575,34 +290,15 @@ EDITAR OBRA
 
 */
 
-  async function editarObra(
-    obra
-  ) {
-
+  async function editarObra(obra) {
     try {
+      const { data: vinculos, error } = await supabase
+        .from("rdo_obra_colaboradores")
+        .select("colaborador_id")
+        .eq("obra_id", obra.id);
 
-      const {
-        data: vinculos,
-        error
-      } = await supabase
-      .from(
-        "rdo_obra_colaboradores"
-      )
-      .select(
-        "colaborador_id"
-      )
-      .eq(
-        "obra_id",
-        obra.id
-      );
-
-
-      if (
-        error
-      ) {
-
+      if (error) {
         throw error;
-
       }
 
       // Vínculos de encarregados (tabela nova). Se ainda não existem
@@ -614,7 +310,7 @@ EDITAR OBRA
           .select("encarregado_id")
           .eq("obra_id", obra.id);
         vinculosEncarregados = vinculosEncData || [];
-      } catch (ignorar) {
+      } catch {
         vinculosEncarregados = [];
       }
 
@@ -625,99 +321,54 @@ EDITAR OBRA
           .from("rdo_obra_encarregado_colaboradores")
           .select("encarregado_id, colaborador_id")
           .eq("obra_id", obra.id);
-        (vinculosDivData || []).forEach(v => {
+        (vinculosDivData || []).forEach((v) => {
           const key = String(v.encarregado_id);
           if (!mapaPorEncarregado[key]) mapaPorEncarregado[key] = [];
           mapaPorEncarregado[key].push(v.colaborador_id);
         });
-      } catch (ignorar) {
+      } catch {
         mapaPorEncarregado = {};
       }
 
-      setObraEditando(
-        obra
-      );
+      setObraEditando(obra);
 
+      setNomeCondominio(obra.nome_condominio);
 
-      setNomeCondominio(
-        obra.nome_condominio
-      );
+      setEndereco(obra.endereco);
 
+      setDataInicio(obra.data_inicio);
 
-      setEndereco(
-        obra.endereco
-      );
+      setDataFinalizacao(obra.data_finalizacao);
 
-
-      setDataInicio(
-        obra.data_inicio
-      );
-
-
-      setDataFinalizacao(
-        obra.data_finalizacao
-      );
-
-      setStatus(
-        obra.status || "em_andamento"
-      );
+      setStatus(obra.status || "em_andamento");
 
       setEncarregadosIds([
         ...new Set([
-          ...vinculosEncarregados.map(v => String(v.encarregado_id)),
+          ...vinculosEncarregados.map((v) => String(v.encarregado_id)),
           ...(obra.encarregado_id ? [String(obra.encarregado_id)] : []),
           ...(obra.encarregadosIds || []).map(String),
         ]),
       ]);
 
-
-      setEquipeId(
-        obra.equipe_id
-        ? String(
-          obra.equipe_id
-        ): ""
-      );
-
+      setEquipeId(obra.equipe_id ? String(obra.equipe_id) : "");
 
       setColaboradoresIndividuaisIds(
-        (vinculos || [])
-        .map(
-          vinculo =>
-          vinculo.colaborador_id
-        )
+        (vinculos || []).map((vinculo) => vinculo.colaborador_id),
       );
 
       setColaboradoresPorEncarregado(mapaPorEncarregado);
 
-      setMostrarFormulario(
-        true
-      );
+      setMostrarFormulario(true);
 
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } catch (erro) {
+      console.error("Erro ao carregar obra para edição:", erro);
 
-      window.scrollTo(
-        {
-          top: 0,
-          behavior: "smooth"
-        }
-      );
-
-
-    } catch (
-      erro
-    ) {
-
-      console.error(
-        "Erro ao carregar obra para edição:",
-        erro
-      );
-
-
-      alert(
-        "Erro ao carregar os dados da obra."
-      );
-
+      alert("Erro ao carregar os dados da obra.");
     }
-
   }
 
   /*
@@ -733,11 +384,17 @@ SALVAR OBRA
         .delete()
         .eq("obra_id", obraId);
       const linhas = [];
-      Object.entries(colaboradoresPorEncarregado || {}).forEach(([encarregadoId, colIds]) => {
-        (colIds || []).forEach(colaboradorId => {
-          linhas.push({ obra_id: obraId, encarregado_id: encarregadoId, colaborador_id: colaboradorId });
-        });
-      });
+      Object.entries(colaboradoresPorEncarregado || {}).forEach(
+        ([encarregadoId, colIds]) => {
+          (colIds || []).forEach((colaboradorId) => {
+            linhas.push({
+              obra_id: obraId,
+              encarregado_id: encarregadoId,
+              colaborador_id: colaboradorId,
+            });
+          });
+        },
+      );
       if (linhas.length > 0) {
         const { error } = await supabase
           .from("rdo_obra_encarregado_colaboradores")
@@ -745,12 +402,14 @@ SALVAR OBRA
         if (error) throw error;
       }
     } catch (erroVinculos) {
-      console.warn("Divisão de funcionários não sincronizada (rode supabase/dividir_funcionarios.sql):", erroVinculos);
+      console.warn(
+        "Divisão de funcionários não sincronizada (rode supabase/dividir_funcionarios.sql):",
+        erroVinculos,
+      );
     }
   }
 
   async function cadastrarObra(event) {
-
     event.preventDefault();
 
     if (
@@ -759,82 +418,58 @@ SALVAR OBRA
       !dataInicio ||
       !dataFinalizacao
     ) {
-
       alert("Preencha todos os campos obrigatórios.");
       return;
-
     }
 
-    if (
-      new Date(dataFinalizacao) <
-      new Date(dataInicio)
-    ) {
-
-      alert(
-        "A data de finalização não pode ser anterior à data de início."
-      );
+    if (new Date(dataFinalizacao) < new Date(dataInicio)) {
+      alert("A data de finalização não pode ser anterior à data de início.");
 
       return;
-
     }
 
     try {
-
       setSalvando(true);
 
       if (obraEditando) {
+        const { error: obraError } = await supabase
+          .from("rdo_obras")
+          .update({
+            nome_condominio: nomeCondominio.trim(),
 
-        const {
-          error: obraError
-        } = await supabase
-        .from("rdo_obras")
-        .update({
+            endereco: endereco.trim(),
 
-          nome_condominio: nomeCondominio.trim(),
+            data_inicio: dataInicio,
 
-          endereco: endereco.trim(),
+            data_finalizacao: dataFinalizacao,
 
-          data_inicio: dataInicio,
+            encarregado_id: encarregadosIds[0] || null,
 
-          data_finalizacao: dataFinalizacao,
+            equipe_id: equipeId ? Number(equipeId) : null,
 
-          encarregado_id:
-          encarregadosIds[0] || null,
-
-          equipe_id: equipeId
-          ? Number(equipeId): null,
-
-          status
-
-        })
-        .eq("id", obraEditando.id);
+            status,
+          })
+          .eq("id", obraEditando.id);
 
         if (obraError) throw obraError;
 
         await supabase
-        .from("rdo_obra_colaboradores")
-        .delete()
-        .eq("obra_id", obraEditando.id);
+          .from("rdo_obra_colaboradores")
+          .delete()
+          .eq("obra_id", obraEditando.id);
 
         if (colaboradoresIndividuaisIds.length > 0) {
-
-          const vinculos =
-          colaboradoresIndividuaisIds.map(colaboradorId => ({
-
+          const vinculos = colaboradoresIndividuaisIds.map((colaboradorId) => ({
             obra_id: obraEditando.id,
 
-            colaborador_id: colaboradorId
-
+            colaborador_id: colaboradorId,
           }));
 
-          const {
-            error: vinculosError
-          } = await supabase
-          .from("rdo_obra_colaboradores")
-          .insert(vinculos);
+          const { error: vinculosError } = await supabase
+            .from("rdo_obra_colaboradores")
+            .insert(vinculos);
 
           if (vinculosError) throw vinculosError;
-
         }
 
         // Sincronizar vínculos de encarregados (multi-responsável)
@@ -847,15 +482,18 @@ SALVAR OBRA
             const { error: vinculosEncError } = await supabase
               .from("rdo_obra_encarregados")
               .insert(
-                encarregadosIds.map(encarregadoId => ({
+                encarregadosIds.map((encarregadoId) => ({
                   obra_id: obraEditando.id,
                   encarregado_id: encarregadoId,
-                }))
+                })),
               );
             if (vinculosEncError) throw vinculosEncError;
           }
         } catch (erroVinculos) {
-          console.warn("Vínculos de encarregados não sincronizados (rode o SQL multi_encarregados):", erroVinculos);
+          console.warn(
+            "Vínculos de encarregados não sincronizados (rode o SQL multi_encarregados):",
+            erroVinculos,
+          );
         }
 
         await sincronizarColaboradoresPorEncarregado(obraEditando.id);
@@ -869,57 +507,44 @@ SALVAR OBRA
         alert("Obra atualizada com sucesso!");
 
         return;
-
       }
 
-      const {
-        data: novaObra,
-        error: obraError
-      } = await supabase
-      .from("rdo_obras")
-      .insert([{
+      const { data: novaObra, error: obraError } = await supabase
+        .from("rdo_obras")
+        .insert([
+          {
+            nome_condominio: nomeCondominio.trim(),
 
-        nome_condominio: nomeCondominio.trim(),
+            endereco: endereco.trim(),
 
-        endereco: endereco.trim(),
+            data_inicio: dataInicio,
 
-        data_inicio: dataInicio,
+            data_finalizacao: dataFinalizacao,
 
-        data_finalizacao: dataFinalizacao,
+            encarregado_id: encarregadosIds[0] || null,
 
-        encarregado_id:
-        encarregadosIds[0] || null,
+            equipe_id: equipeId ? Number(equipeId) : null,
 
-        equipe_id: equipeId
-        ? Number(equipeId): null,
-
-        status
-
-      }])
-      .select()
-      .single();
+            status,
+          },
+        ])
+        .select()
+        .single();
 
       if (obraError) throw obraError;
 
       if (colaboradoresIndividuaisIds.length > 0) {
-
-        const vinculos =
-        colaboradoresIndividuaisIds.map(colaboradorId => ({
-
+        const vinculos = colaboradoresIndividuaisIds.map((colaboradorId) => ({
           obra_id: novaObra.id,
 
-          colaborador_id: colaboradorId
-
+          colaborador_id: colaboradorId,
         }));
 
-        const {
-          error: vinculosError
-        } = await supabase
-        .from("rdo_obra_colaboradores")
-        .insert(vinculos);
+        const { error: vinculosError } = await supabase
+          .from("rdo_obra_colaboradores")
+          .insert(vinculos);
 
         if (vinculosError) throw vinculosError;
-
       }
 
       // Vínculos de encarregados (multi-responsável)
@@ -928,14 +553,17 @@ SALVAR OBRA
           const { error: vinculosEncError } = await supabase
             .from("rdo_obra_encarregados")
             .insert(
-              encarregadosIds.map(encarregadoId => ({
+              encarregadosIds.map((encarregadoId) => ({
                 obra_id: novaObra.id,
                 encarregado_id: encarregadoId,
-              }))
+              })),
             );
           if (vinculosEncError) throw vinculosEncError;
         } catch (erroVinculos) {
-          console.warn("Vínculos de encarregados não sincronizados (rode o SQL multi_encarregados):", erroVinculos);
+          console.warn(
+            "Vínculos de encarregados não sincronizados (rode o SQL multi_encarregados):",
+            erroVinculos,
+          );
         }
       }
 
@@ -948,22 +576,13 @@ SALVAR OBRA
       setMostrarFormulario(false);
 
       alert("Obra cadastrada com sucesso!");
-
     } catch (erro) {
-
       console.error(erro);
 
-      alert(
-        erro.message ||
-        "Erro ao salvar obra."
-      );
-
+      alert(erro.message || "Erro ao salvar obra.");
     } finally {
-
       setSalvando(false);
-
     }
-
   }
 
   /*
@@ -972,81 +591,37 @@ EXCLUIR OBRA
 
 */
 
-  async function excluirObra(
-    obra
-  ) {
-
-    const confirmar =
-    window.confirm(
-      `Deseja realmente excluir a obra "${obra.nome_condominio}"?`
+  async function excluirObra(obra) {
+    const confirmar = window.confirm(
+      `Deseja realmente excluir a obra "${obra.nome_condominio}"?`,
     );
 
-
-    if (
-      !confirmar
-    ) {
-
+    if (!confirmar) {
       return;
-
     }
 
-
     try {
-
-      setExcluindoId(
-        obra.id
-      );
-
-
       /*
   ==============================================
   VERIFICAR RDOs
   ==============================================
   */
 
-      const {
-        data: rdosExistentes,
-        error: rdosError
-      } = await supabase
-      .from(
-        "rdos"
-      )
-      .select(
-        "id"
-      )
-      .eq(
-        "obra_id",
-        obra.id
-      )
-      .limit(
-        1
-      );
+      const { data: rdosExistentes, error: rdosError } = await supabase
+        .from("rdos")
+        .select("id")
+        .eq("obra_id", obra.id)
+        .limit(1);
 
-
-      if (
-        rdosError
-      ) {
-
+      if (rdosError) {
         throw rdosError;
-
       }
 
-
-      if (
-        rdosExistentes &&
-        rdosExistentes.length >
-        0
-      ) {
-
-        alert(
-          "Esta obra possui RDOs registrados e não pode ser excluída."
-        );
-
+      if (rdosExistentes && rdosExistentes.length > 0) {
+        alert("Esta obra possui RDOs registrados e não pode ser excluída.");
 
         return;
-
       }
-
 
       /*
   ==============================================
@@ -1054,25 +629,13 @@ EXCLUIR OBRA
   ==============================================
   */
 
-      const {
-        error: vinculosError
-      } = await supabase
-      .from(
-        "rdo_obra_colaboradores"
-      )
-      .delete()
-      .eq(
-        "obra_id",
-        obra.id
-      );
+      const { error: vinculosError } = await supabase
+        .from("rdo_obra_colaboradores")
+        .delete()
+        .eq("obra_id", obra.id);
 
-
-      if (
-        vinculosError
-      ) {
-
+      if (vinculosError) {
         throw vinculosError;
-
       }
 
       try {
@@ -1084,7 +647,9 @@ EXCLUIR OBRA
           .from("rdo_obra_encarregado_colaboradores")
           .delete()
           .eq("obra_id", obra.id);
-      } catch (ignorar) {}
+      } catch {
+        // vínculos opcionais — ignora se a tabela não existir
+      }
 
       /*
   ==============================================
@@ -1092,67 +657,25 @@ EXCLUIR OBRA
   ==============================================
   */
 
-      const {
-        error: obraError
-      } = await supabase
-      .from(
-        "rdo_obras"
-      )
-      .delete()
-      .eq(
-        "id",
-        obra.id
-      );
+      const { error: obraError } = await supabase
+        .from("rdo_obras")
+        .delete()
+        .eq("id", obra.id);
 
-
-      if (
-        obraError
-      ) {
-
+      if (obraError) {
         throw obraError;
-
       }
 
-
-      setObras(
-        obrasAtuais =>
-        obrasAtuais.filter(
-          obraAtual =>
-          obraAtual.id !==
-          obra.id
-        )
+      setObras((obrasAtuais) =>
+        obrasAtuais.filter((obraAtual) => obraAtual.id !== obra.id),
       );
 
+      alert("Obra excluída com sucesso!");
+    } catch (erro) {
+      console.error("Erro ao excluir obra:", erro);
 
-      alert(
-        "Obra excluída com sucesso!"
-      );
-
-
-    } catch (
-      erro
-    ) {
-
-      console.error(
-        "Erro ao excluir obra:",
-        erro
-      );
-
-
-      alert(
-        erro.message ||
-        "Erro ao excluir obra."
-      );
-
-
-    } finally {
-
-      setExcluindoId(
-        null
-      );
-
+      alert(erro.message || "Erro ao excluir obra.");
     }
-
   }
 
   /*
@@ -1161,85 +684,70 @@ FORMATAR DATA
 
 */
 
-  function formatarData(
-    data
-  ) {
-
-    if (
-      !data
-    ) {
-
+  function formatarData(data) {
+    if (!data) {
       return "Não informado";
-
     }
 
-
-    const [
-      ano,
-      mes,
-      dia
-    ] =
-    data.split(
-      "-"
-    );
-
+    const [ano, mes, dia] = data.split("-");
 
     return `${dia}/${mes}/${ano}`;
-
   }
 
   /*
 TELA
 */
+  if (carregando) {
+    return (
+      <main className="app-content">
+        <div className="empty-state">
+          <p>Carregando obras...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="app-content">
       <div className="page-header">
-        <div className="obras-resumo">
-          <div className="resumo-card">
-            <span>Total</span>
-            <strong>{obras.length}</strong>
-          </div>
-          <div className="resumo-card">
-            <span>Em andamento</span>
-            <strong>
-              {
-              obras.filter(
-                obra =>
-                obra.status === "em_andamento"
-              ).length
-              }
-            </strong>
-          </div>
-          <div className="resumo-card">
-            <span>Paralisadas</span>
-            <strong>
-              {
-              obras.filter(
-                obra =>
-                obra.status === "paralisada"
-              ).length
-              }
-            </strong>
-          </div>
-          <div className="resumo-card">
-            <span>Finalizadas</span>
-            <strong>
-              {
-              obras.filter(
-                obra =>
-                obra.status === "finalizada"
-              ).length
-              }
-            </strong>
+        <div className="resumo-geral-card">
+          <div className="obras-resumo">
+            <div className="resumo-card">
+              <span>Total</span>
+              <strong>{obras.length}</strong>
+            </div>
+            <div className="resumo-card">
+              <span>Em andamento</span>
+              <strong>
+                {obras.filter((obra) => obra.status === "em_andamento").length}
+              </strong>
+            </div>
+            <div className="resumo-card">
+              <span>Paralisadas</span>
+              <strong>
+                {obras.filter((obra) => obra.status === "paralisada").length}
+              </strong>
+            </div>
+            <div className="resumo-card">
+              <span>Finalizadas</span>
+              <strong>
+                {obras.filter((obra) => obra.status === "finalizada").length}
+              </strong>
+            </div>
           </div>
         </div>
-        <div className="page-title">
-          <h1>
-            Gerenciar Obras
-          </h1>
-          <p>
-            Cadastre e acompanhe as obras do sistema.
-          </p>
+        <div className="gerenciar-card">
+          <div className="page-title">
+            <h1>Gerenciar obras</h1>
+            <p>Cadastre e acompanhe as obras do sistema.</p>
+          </div>
+          <div className="resumo-lateral">
+            <strong>
+              {obras.filter((obra) => obra.status === "em_andamento").length}/
+              {obras.filter((obra) => obra.status !== "finalizada").length}
+            </strong>
+            <span>obras em andamento de obras ativas</span>
+          </div>
         </div>
 
         <button
@@ -1248,482 +756,351 @@ TELA
             if (mostrarFormulario) {
               limparFormulario();
             }
-            setMostrarFormulario(
-              !mostrarFormulario
-            );
+            setMostrarFormulario(!mostrarFormulario);
           }}
-          >
-          {
-          mostrarFormulario
-          ? "✖ Fechar Formulário": "➕ Nova Obra"
-          }
+        >
+          {mostrarFormulario ? "✖ Fechar Formulário" : "➕ Nova Obra"}
         </button>
       </div>
       {mostrarFormulario && (
-        <form
-          className="form-card form-group-full"
-          onSubmit={
-          cadastrarObra
-          }
-          >
-
-          <h2>
-            {obraEditando
-            ? "Editar Obra": "Nova Obra"}
-          </h2>
-          <div className="form-grid">
-            <div className="form-group form-group-full">
-              <label>
-                Nome do condomínio
-              </label>
+        <form className="form-card form-group-full" onSubmit={cadastrarObra}>
+          <h2>{obraEditando ? "Editar Obra" : "Nova Obra"}</h2>
+          <div className="form-grid form-grid-4">
+            <div className="form-group">
+              <label>Nome do condomínio</label>
               <input
-              type="text"
-              value={
-              nomeCondominio
-              }
-              onChange={
-              event =>
-              setNomeCondominio(
-                event.target.value
-              )
-              }
-              required
+                type="text"
+                value={nomeCondominio}
+                onChange={(event) => setNomeCondominio(event.target.value)}
+                required
               />
+            </div>
+            <div className="form-group">
+              <label>Endereço</label>
+              <input
+                type="text"
+                value={endereco}
+                onChange={(event) => setEndereco(event.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Data de início</label>
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={(event) => setDataInicio(event.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Data de finalização</label>
+              <input
+                type="date"
+                value={dataFinalizacao}
+                onChange={(event) => setDataFinalizacao(event.target.value)}
+                required
+              />
+            </div>
           </div>
-          <div className="form-group form-group-full">
-            <label>
-              Encarregados responsáveis (pode marcar mais de um)
-            </label>
-            {encarregados.length === 0 ? (
-              <p>Nenhum encarregado cadastrado.</p>
-            ) : (
-              <div className="selection-list">
-                {encarregados.map(encarregado => (
-                  <label
-                    key={encarregado.id}
-                    className="selection-item"
+          <div className="form-grid form-grid-status">
+            <div className="form-group">
+              <label>Status da obra</label>
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+              >
+                <option value="em_andamento">Em andamento</option>
+                <option value="paralisada">Paralisada</option>
+
+                <option value="finalizada">Finalizada</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Encarregados responsáveis (pode marcar mais de um)</label>
+              {encarregados.length === 0 ? (
+                <p>Nenhum encarregado cadastrado.</p>
+              ) : (
+                <div className="dropdown-encarregados">
+                  <button
+                    type="button"
+                    className="dropdown-encarregados-botao"
+                    onClick={() =>
+                      setMenuEncarregadosAberto(!menuEncarregadosAberto)
+                    }
                   >
-                    <input
-                      type="checkbox"
-                      checked={encarregadosIds.includes(encarregado.id)}
-                      onChange={() =>
-                        setEncarregadosIds(prev =>
-                          prev.includes(encarregado.id)
-                            ? prev.filter(id => id !== encarregado.id)
-                            : [...prev, encarregado.id]
-                        )
-                      }
-                    />
                     <span>
-                      {encarregado.nome}
-                      {encarregado.perfil === "pintura" ? " (Pintura)" : ""}
+                      {encarregadosIds.length === 0
+                        ? "Selecione os encarregados..."
+                        : encarregadosIds.length === 1
+                          ? encarregados.find(
+                              (e) =>
+                                String(e.id) === String(encarregadosIds[0]),
+                            )?.nome || "1 selecionado"
+                          : `${encarregadosIds.length} selecionados`}
                     </span>
-                  </label>
+                    <span>{menuEncarregadosAberto ? "▲" : "▼"}</span>
+                  </button>
+                  {menuEncarregadosAberto && (
+                    <div className="dropdown-encarregados-painel">
+                      {encarregados.map((encarregado) => (
+                        <label
+                          key={encarregado.id}
+                          className="dropdown-encarregado-item"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={encarregadosIds.includes(encarregado.id)}
+                            onChange={() =>
+                              setEncarregadosIds((prev) =>
+                                prev.includes(encarregado.id)
+                                  ? prev.filter((id) => id !== encarregado.id)
+                                  : [...prev, encarregado.id],
+                              )
+                            }
+                          />
+                          <span>
+                            {encarregado.nome}
+                            {encarregado.perfil === "pintura"
+                              ? " (Pintura)"
+                              : ""}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label>Equipe da obra</label>
+
+              <select
+                value={equipeId}
+                onChange={(event) => {
+                  setEquipeId(event.target.value);
+
+                  setColaboradoresIndividuaisIds([]);
+                }}
+              >
+                <option value="">Nenhuma equipe selecionada</option>
+
+                {equipes.map((equipe) => (
+                  <option key={equipe.id} value={equipe.id}>
+                    {equipe.nome}
+                  </option>
                 ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group form-group-full">
+            <label>Colaboradores individuais</label>
+            {colaboradores.length === 0 ? (
+              <p>Nenhum colaborador cadastrado.</p>
+            ) : (
+              <div className="colaboradores-grid">
+                {colaboradores.map((colaborador) => {
+                  const pertenceAEquipe = colaboradorPertenceAEquipeSelecionada(
+                    colaborador.id,
+                  );
+
+                  return (
+                    <label
+                      key={colaborador.id}
+                      className={
+                        pertenceAEquipe
+                          ? "selection-item disabled"
+                          : "selection-item"
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        checked={colaboradoresIndividuaisIds.includes(
+                          colaborador.id,
+                        )}
+                        disabled={pertenceAEquipe}
+                        onChange={() =>
+                          alternarColaboradorIndividual(colaborador.id)
+                        }
+                      />
+
+                      <span>
+                        {colaborador.nome}
+                        {pertenceAEquipe && (
+                          <small> — Já pertence à equipe</small>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             )}
           </div>
-          <div className="form-group form-group-full">
-            <label>
-              Endereço
-            </label>
-            <input
-            type="text"
-            value={
-            endereco
-            }
-            onChange={
-            event =>
-            setEndereco(
-              event.target.value
-            )
-            }
-            required
-            />
-        </div>
-        <div className="form-group">
-          <label>
-            Data de início
-          </label>
-          <input
-          type="date"
-          value={
-          dataInicio
-          }
-          onChange={
-          event =>
-          setDataInicio(
-            event.target.value
-          )
-          }
-          required
-          />
-      </div>
-      <div className="form-group">
-        <label>
-          Data de finalização
-        </label>
-        <input
-        type="date"
-        value={
-        dataFinalizacao
-        }
-        onChange={
-        event =>
-        setDataFinalizacao(
-          event.target.value
-        )
-        }
-        required
-        />
-    </div>
-    <br />
-  <div className="form-group">
-    <label>
-      Status da obra
-    </label>
-    <select
-      value={status}
-      onChange={(event) =>
-      setStatus(event.target.value)
-      }
-      >
-      <option value="em_andamento">
-        Em andamento
-      </option>
-      <option value="paralisada">
-        Paralisada
-      </option>
 
-      <option value="finalizada">
-        Finalizada
-      </option>
+          {encarregadosIds.length > 1 && (
+            <div className="form-group form-group-full">
+              <label>Funcionários por encarregado</label>
+              <p>
+                Se marcar funcionários abaixo, cada encarregado verá{" "}
+                <strong>só</strong> os dele no RDO. Se deixar vazio, vale a
+                equipe/colaboradores acima para todos.
+              </p>
+              {encarregadosIds.map((encarregadoId) => {
+                const enc = encarregados.find(
+                  (e) => String(e.id) === String(encarregadoId),
+                );
+                const selecionados =
+                  colaboradoresPorEncarregado[String(encarregadoId)] || [];
+                return (
+                  <div key={encarregadoId} style={{ marginTop: 12 }}>
+                    <strong>
+                      {enc?.nome || "Encarregado"}
+                      {enc?.perfil === "pintura" ? " (Pintura)" : ""} —{" "}
+                      {selecionados.length} funcionário(s)
+                    </strong>
+                    <div className="selection-list">
+                      {colaboradores.map((colaborador) => (
+                        <label key={colaborador.id} className="selection-item">
+                          <input
+                            type="checkbox"
+                            checked={selecionados.includes(colaborador.id)}
+                            onChange={() =>
+                              alternarColaboradorPorEncarregado(
+                                encarregadoId,
+                                colaborador.id,
+                              )
+                            }
+                          />
+                          <span>{colaborador.nome}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                limparFormulario();
 
-    </select>
-
-  </div>
-
-
-  <div className="form-group">
-
-    <label>
-      Equipe da obra
-    </label>
-
-
-    <select
-      value={
-      equipeId
-      }
-      onChange={
-      event => {
-
-        setEquipeId(
-          event.target.value
-        );
-
-
-        setColaboradoresIndividuaisIds(
-          []
-        );
-
-      }
-      }
-      >
-
-      <option value="">
-        Nenhuma equipe selecionada
-      </option>
-
-
-      {equipes.map(
-        equipe => (
-
-          <option
-            key={
-            equipe.id
-            }
-            value={
-            equipe.id
-            }
+                setMostrarFormulario(false);
+              }}
             >
+              Cancelar
+            </button>
 
-            {
-            equipe.nome
-            }
-
-          </option>
-
-        )
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={salvando}
+            >
+              {salvando
+                ? "Salvando..."
+                : obraEditando
+                  ? "Atualizar Obra"
+                  : "Salvar Obra"}
+            </button>
+          </div>
+        </form>
       )}
 
-    </select>
+      <section className="section">
+        <div className="section-header">
+          <div className="obra-filtros">
+            <input
+              type="text"
+              placeholder="Buscar condomínio..."
+              value={busca}
+              onChange={(event) => setBusca(event.target.value)}
+            />
+          </div>
 
-  </div>
+          <h2>Obras cadastradas</h2>
 
+          <span>{obras.length} obra(s)</span>
+        </div>
 
-  <div className="form-group form-group-full">
-    <label>
-      Colaboradores individuais
-    </label>
-    {colaboradores.length ===
-    0 ? (
-      <p>
-        Nenhum colaborador cadastrado.
-      </p>
-    ): (
-      <div
-        className="selection-list"
-        >
-        {colaboradores.map(
-          colaborador => {
-            const pertenceAEquipe =
-            colaboradorPertenceAEquipeSelecionada(
-              colaborador.id
-            );
+        {obras.length === 0 ? (
+          <div className="empty-state">
+            <p>Nenhuma obra cadastrada.</p>
 
-            return (
-              <label
-                key={
-                colaborador.id
-                }
-                className={
-                pertenceAEquipe
-                ? "selection-item disabled": "selection-item"
-                }
-                >
-                <input
-                type="checkbox"
-                checked={
-                colaboradoresIndividuaisIds.includes(
-                  colaborador.id
-                )
-                }
-                disabled={
-                pertenceAEquipe
-                }
-                onChange={() =>
-                alternarColaboradorIndividual(
-                  colaborador.id
-                )
-                }
-                />
+            <p>Clique em "+ Nova Obra" para começar.</p>
+          </div>
+        ) : (
+          <div className="obras-grid-gerenciar">
+            {obrasFiltradas.map((obra) => (
+              <div className="obra-card" key={obra.id}>
+                <div className="obra-card-header">
+                  <h3>🏗 {obra.nome_condominio}</h3>
+                  <span
+                    className={
+                      obra.status === "em_andamento"
+                        ? "badge badge-success"
+                        : obra.status === "paralisada"
+                          ? "badge badge-warning"
+                          : "badge badge-secondary"
+                    }
+                  >
+                    {obra.status === "em_andamento"
+                      ? "Em andamento"
+                      : obra.status === "paralisada"
+                        ? "Paralisada"
+                        : "Finalizada"}
+                  </span>
+                </div>
 
-              <span>
-                {
-                colaborador.nome
-                }
-                {pertenceAEquipe && (
-                  <small>
-                    {" "}
-                    — Já pertence à equipe
-                  </small>
-                )}
-              </span>
-            </label>
-          );
-        }
-      )}
-    </div>
-  )}
-</div>
+                <p>
+                  👷{" "}
+                  {(obra.encarregadosIds && obra.encarregadosIds.length > 0
+                    ? obra.encarregadosIds
+                    : obra.encarregado_id
+                      ? [obra.encarregado_id]
+                      : []
+                  )
+                    .map(
+                      (id) =>
+                        encarregados.find((e) => String(e.id) === String(id))
+                          ?.nome,
+                    )
+                    .filter(Boolean)
+                    .join(", ") ||
+                    obra.encarregado?.nome ||
+                    "Sem encarregado"}
+                </p>
 
-{encarregadosIds.length > 1 && (
-  <div className="form-group form-group-full">
-    <label>
-      Funcionários por encarregado
-    </label>
-    <p>
-      Se marcar funcionários abaixo, cada encarregado verá <strong>só</strong> os dele no RDO.
-      Se deixar vazio, vale a equipe/colaboradores acima para todos.
-    </p>
-    {encarregadosIds.map(encarregadoId => {
-      const enc = encarregados.find(e => String(e.id) === String(encarregadoId));
-      const selecionados = colaboradoresPorEncarregado[String(encarregadoId)] || [];
-      return (
-        <div key={encarregadoId} style={{ marginTop: 12 }}>
-          <strong>{enc?.nome || "Encarregado"}{enc?.perfil === "pintura" ? " (Pintura)" : ""} — {selecionados.length} funcionário(s)</strong>
-          <div className="selection-list">
-            {colaboradores.map(colaborador => (
-              <label key={colaborador.id} className="selection-item">
-                <input
-                  type="checkbox"
-                  checked={selecionados.includes(colaborador.id)}
-                  onChange={() => alternarColaboradorPorEncarregado(encarregadoId, colaborador.id)}
-                />
-                <span>{colaborador.nome}</span>
-              </label>
+                <p>👥 {obra.equipe?.nome || "Sem equipe"}</p>
+
+                <p>📅 {formatarData(obra.data_finalizacao)}</p>
+
+                <div className="obra-card-actions">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => editarObra(obra)}
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => excluirObra(obra)}
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-      );
-    })}
-  </div>
-)}
-</div>
-<div className="form-actions">
-<button
-type="button"
-className="btn btn-secondary"
-onClick={() => {
-
-limparFormulario();
-
-
-setMostrarFormulario(
-false
-);
-
-}}
->
-
-Cancelar
-
-</button>
-
-
-<button
-type="submit"
-className="btn btn-primary"
-disabled={
-salvando
-}
->
-
-{
-salvando
-? "Salvando...": obraEditando
-? "Atualizar Obra": "Salvar Obra"
-}
-
-</button>
-
-</div>
-
-</form>
-
-)}
-
-<section className="section">
-
-<div className="section-header">
-
-<div className="obra-filtros">
-
-<input
-type="text"
-placeholder="Buscar condomínio..."
-value={busca}
-onChange={(event) =>
-setBusca(event.target.value)
-}
-/>
-
-</div>
-
-<h2>
-Obras cadastradas
-</h2>
-
-
-<span>
-
-{
-obras.length
-} obra(s)
-
-</span>
-
-</div>
-
-
-{obras.length ===
-0 ? (
-
-<div className="empty-state">
-
-<p>
-Nenhuma obra cadastrada.
-</p>
-
-
-<p>
-Clique em "+ Nova Obra" para começar.
-</p>
-
-</div>
-
-): (
-
-<div className="obras-grid">
-{obrasFiltradas.map((obra) => (
-<div
-className="obra-card"
-key={obra.id}
->
-<div className="obra-card-header">
-<h3>
-🏗 {obra.nome_condominio}
-</h3>
-<span
-className={
-obra.status === "em_andamento"
-? "badge badge-success": obra.status === "paralisada"
-? "badge badge-warning": "badge badge-secondary"
-}
->
-{
-obra.status === "em_andamento"
-? "Em andamento": obra.status === "paralisada"
-? "Paralisada": "Finalizada"
-}
-</span>
-
-</div>
-
-<p>
-👷 {(
-(obra.encarregadosIds && obra.encarregadosIds.length > 0 ? obra.encarregadosIds : (obra.encarregado_id ? [obra.encarregado_id] : []))
-.map(id => encarregados.find(e => String(e.id) === String(id))?.nome)
-.filter(Boolean)
-).join(", ") || obra.encarregado?.nome || "Sem encarregado"}
-</p>
-
-<p>
-👥 {obra.equipe?.nome || "Sem equipe"}
-</p>
-
-<p>
-📅 {formatarData(obra.data_finalizacao)}
-</p>
-
-<div className="obra-card-actions">
-
-<button
-className="btn btn-secondary"
-onClick={() => editarObra(obra)}
->
-Editar
-</button>
-
-<button
-className="btn btn-danger"
-onClick={() => excluirObra(obra)}
->
-Excluir
-</button>
-
-</div>
-
-</div>
-
-))}
-
-</div>
-)}
-</section>
-</main>
-);
+        )}
+      </section>
+    </main>
+  );
 }
 
 export default GerenciarObras;

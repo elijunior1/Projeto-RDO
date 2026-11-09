@@ -11,9 +11,7 @@ import {
   useNavigate
 } from "react-router-dom";
 
-import { jsPDF } from "jspdf";
-
-import autoTable from "jspdf-autotable";
+// jsPDF + autoTable carregados sob demanda em gerarPDF()
 
 import {
   exportarRDOsExcel
@@ -487,7 +485,7 @@ function RelatorioRDO({
     }
   }
 
-  function gerarPDF() {
+  async function gerarPDF() {
 
     if (!obraSelecionada) {
       alert("Nenhuma obra selecionada.");
@@ -498,6 +496,11 @@ function RelatorioRDO({
       alert("Não existem RDOs no período selecionado.");
       return;
     }
+
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
 
     const doc = new jsPDF({
       orientation: "landscape",

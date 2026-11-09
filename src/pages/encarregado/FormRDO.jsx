@@ -12,6 +12,12 @@ import {
   producaoInicial
 } from "../../config/producao.js";
 
+import {
+  enfileirarRDO,
+  ehErroDeRede,
+  ehDuplicada
+} from "../../services/filaOffline.js";
+
 import "./FormRDO.css";
 
 function FormRDO({
@@ -800,6 +806,34 @@ ENVIAR RDO
       const dataHoje =
         obterDataHoje();
 
+      // Sem internet: salva neste aparelho e envia quando voltar
+      if (!navigator.onLine) {
+        const payloadOffline = {
+          obra_id: obra.id,
+          encarregado_id: usuario.id,
+          encarregado_nome: usuario.nome || null,
+          equipe_id: obra.equipe_id || null,
+          equipe_nome: obra.equipe?.nome || null,
+          data: dataHoje,
+          observacoes: detalhamentoBaixaProdutividade.trim() || null,
+          producaoParaSalvar: camposProducao
+            .map((campo) => ({ atividade: campo.atividade, quantidade: Number(producao[campo.campo] || 0) }))
+            .filter((item) => item.quantidade > 0),
+          efetivoParaSalvar: efetivo.map((c) => ({ colaborador_id: c.colaboradorId, presenca: c.presenca })),
+          motivosParaSalvar: motivosBaixaProdutividade.map((motivo) => ({ motivo })),
+          materiaisParaSalvar: materiais
+            .filter((item) => item.descricao.trim())
+            .map((item) => ({ descricao: item.descricao, quantidade: Number(item.quantidade || 0), unidade: item.unidade || "un" })),
+        };
+        const salvou = enfileirarRDO(payloadOffline);
+        alert(
+          salvou
+            ? "Sem internet: RDO salva neste aparelho e será enviada automaticamente quando a conexão voltar."
+            : "Esta RDO já está salva neste aparelho para envio."
+        );
+        navegar("home");
+        return;
+      }
 
       console.log(
 
@@ -1330,14 +1364,33 @@ ENVIAR RDO
       );
 
 
-      const ehDuplicada =
-        erro?.code === "23505" ||
-        /duplicate key|rdos_obra_id_data_key|rdos_uma_por_usuario_por_dia/i.test(
-          erro?.message || ""
-        );
+      // Queda no meio do envio (sinal caiu): fila offline
+      if (ehErroDeRede(erro)) {
+        const payloadOffline = {
+          obra_id: obra.id,
+          encarregado_id: usuario.id,
+          encarregado_nome: usuario.nome || null,
+          equipe_id: obra.equipe_id || null,
+          equipe_nome: obra.equipe?.nome || null,
+          data: obterDataHoje(),
+          observacoes: detalhamentoBaixaProdutividade.trim() || null,
+          producaoParaSalvar: camposProducao
+            .map((campo) => ({ atividade: campo.atividade, quantidade: Number(producao[campo.campo] || 0) }))
+            .filter((item) => item.quantidade > 0),
+          efetivoParaSalvar: efetivo.map((c) => ({ colaborador_id: c.colaboradorId, presenca: c.presenca })),
+          motivosParaSalvar: motivosBaixaProdutividade.map((motivo) => ({ motivo })),
+          materiaisParaSalvar: materiais
+            .filter((item) => item.descricao.trim())
+            .map((item) => ({ descricao: item.descricao, quantidade: Number(item.quantidade || 0), unidade: item.unidade || "un" })),
+        };
+        enfileirarRDO(payloadOffline);
+        alert("Conexão caiu: RDO salva neste aparelho e será enviada automaticamente quando voltar a internet.");
+        navegar("home");
+        return;
+      }
 
       alert(
-        ehDuplicada
+        ehDuplicada(erro)
           ? "Você já enviou a RDO desta obra hoje."
           : `Erro ao enviar RDO: ${erro.message || "Erro desconhecido"}`
       );

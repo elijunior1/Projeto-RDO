@@ -44,6 +44,11 @@ function HomeAdmin( {
     setEncarregados
   ] = useState([]);
 
+  const [
+    pendentesHoje,
+    setPendentesHoje
+  ] = useState([]);
+
 
   useEffect(() => {
     carregarDashboard();
@@ -102,29 +107,29 @@ function HomeAdmin( {
     );
 
 
-    const hoje =
-    new Date()
-    .toISOString()
-    .split("T")[0];
+    // Datas no fuso LOCAL (toISOString usa UTC e erra à noite no Brasil)
+    const formatarDataLocal = (d) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const hoje = formatarDataLocal(new Date());
+    const ontemData = new Date();
+    ontemData.setDate(ontemData.getDate() - 1);
+    const ontem = formatarDataLocal(ontemData);
 
-
+    // Busca hoje (contador) e ontem (pendentes) de uma vez
     const {
       data: rdos,
       error: erroRdos
     } = await supabase
     .from("rdos")
-    .select("id")
-    .eq(
-      "data",
-      hoje
-    );
+    .select("id, obra_id, encarregado_id, data")
+    .in("data", [hoje, ontem]);
 
 
     if (
       !erroRdos
     ) {
       setRdosHoje(
-        rdos.length
+        (rdos || []).filter((r) => r.data === hoje).length
       );
     }
 
@@ -223,6 +228,38 @@ function HomeAdmin( {
       setEncarregados(
         lista
       );
+
+      // RDOs pendentes de ONTEM: quem não enviou ontem falhou de verdade
+      // (mostrar "hoje" geraria falsa pendência durante o dia).
+      const pendentes = [];
+      (obras || [])
+        .filter((obra) => obra.status === "em_andamento")
+        .forEach((obra) => {
+          const responsaveis = [
+            ...new Set([
+              ...(obra.encarregado_id ? [obra.encarregado_id] : []),
+              ...vinculosEncarregados.filter((v) => v.obra_id === obra.id).map((v) => v.encarregado_id),
+            ]),
+          ];
+          responsaveis.forEach((encarregadoId) => {
+            const enviou = (rdos || []).some(
+              (rdo) => rdo.data === ontem && String(rdo.obra_id) === String(obra.id) && String(rdo.encarregado_id) === String(encarregadoId)
+            );
+            if (!enviou) {
+              const enc = (usuarios || []).find((u) => String(u.id) === String(encarregadoId));
+              // Ignora usuários desativados (não cobra RDO de quem foi desligado)
+              if (enc && enc.ativo === false) return;
+              pendentes.push({
+                obraId: obra.id,
+                obraNome: obra.nome_condominio,
+                encarregadoId,
+                encarregadoNome: enc?.nome || "Sem nome",
+                tipo: enc && String(enc.perfil || "").toLowerCase().includes("pintura") ? "🎨 Pintura" : "🏗 Obra",
+              });
+            }
+          });
+        });
+      setPendentesHoje(pendentes);
     } else {
       console.error(
         "Erro ao carregar encarregados:",
@@ -339,19 +376,36 @@ function HomeAdmin( {
 
           <div className="dashboard-card">
             <div className="dashboard-icon">
-              👷
+              ⚠️
             </div>
 
             <span className="dashboard-label">
-              Encarregados
+              Pendentes ontem
             </span>
 
             <div className="dashboard-number">
-              {encarregados.length}
+              {pendentesHoje.length}
             </div>
           </div>
 
         </section>
+        {pendentesHoje.length > 0 && (
+          <section className="section" style={{ marginTop: 24 }}>
+            <div className="section-header">
+              <h2>⚠️ RDOs pendentes de ontem</h2>
+              <span>{pendentesHoje.length} pendência(s)</span>
+            </div>
+            <div className="cards-grid">
+              {pendentesHoje.map((p, i) => (
+                <article className="card" key={`${p.obraId}-${p.encarregadoId}-${i}`}>
+                  <h3>🏗 {p.obraNome}</h3>
+                  <p>👷 {p.encarregadoNome} · {p.tipo}</p>
+                  <p>🔴 RDO não enviada ontem</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
         <section className="acoes">
           <h2>
             Ações rápidas

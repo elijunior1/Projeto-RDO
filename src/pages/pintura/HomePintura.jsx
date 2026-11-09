@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { lerFila } from "../../services/filaOffline.js";
 import "../encarregado/HomeEncarregado.css";
 
 function HomePintura({
@@ -110,6 +111,12 @@ function HomePintura({
           <p>Acompanhe suas obras de pintura e envie os RDOs diariamente.</p>
         </div>
       </div>
+
+      {lerFila().length > 0 && (
+        <div style={{ background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+          ⏳ {lerFila().length} RDO(s) salva(s) neste aparelho aguardando internet para envio.
+        </div>
+      )}
 
       <div className="encarregado-banner">
         <div className="encarregado-banner-content">

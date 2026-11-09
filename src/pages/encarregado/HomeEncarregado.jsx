@@ -3,6 +3,8 @@ import {
   useState
 } from "react";
 
+import { lerFila } from "../../services/filaOffline.js";
+
 import "./HomeEncarregado.css";
 
 function HomeEncarregado( {
@@ -187,6 +189,12 @@ function HomeEncarregado( {
         </div>
 
       </div>
+
+      {lerFila().length > 0 && (
+        <div style={{ background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+          ⏳ {lerFila().length} RDO(s) salva(s) neste aparelho aguardando internet para envio.
+        </div>
+      )}
 
       <div className="encarregado-banner">
 

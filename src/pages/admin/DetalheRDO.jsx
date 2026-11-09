@@ -14,9 +14,7 @@ import {
 
 import RdoPdfTemplate from "../../components/RdoPdfTemplate";
 
-import jsPDF from "jspdf";
-
-import html2canvas from "html2canvas";
+// jsPDF/html2canvas carregados sob demanda em gerarPDF()
 
 import "./DetalhesRDO.css";
 
@@ -407,6 +405,11 @@ GERAR PDF
   async function gerarPDF() {
 
     try {
+
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
 
       const elemento =
         document.getElementById(

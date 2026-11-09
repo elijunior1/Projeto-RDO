@@ -1,4 +1,6 @@
 import {
+  Suspense,
+  lazy,
   useEffect,
   useRef,
   useState
@@ -21,21 +23,28 @@ import {
 
 import AppLayout from "./components/AppLayout";
 
+import {
+  lerFila,
+  processarFila
+} from "./services/filaOffline.js";
+
 import Login from "./pages/Login";
 
-import HomeAdmin from "./pages/admin/HomeAdmin";
-import GerenciarObras from "./pages/admin/GerenciarObras";
-import GerenciarColaboradores from "./pages/admin/GerenciarColaboradores";
-import ObrasEncarregado from "./pages/admin/ObrasEncarregado";
-import ConsultaRDO from "./pages/admin/ConsultaRDO";
-import SelecionarObraRDO from "./pages/admin/SelecionarObraRDO";
-
-import HomeEncarregado from "./pages/encarregado/HomeEncarregado";
-import FormRDO from "./pages/encarregado/FormRDO";
-import HomePintura from "./pages/pintura/HomePintura";
-import FormRDOPintura from "./pages/pintura/FormRDOPintura";
-import DetalheRDO from "./pages/admin/DetalheRDO";
-import RelatorioRDO from "./pages/admin/RelatorioRDO";
+// Páginas carregadas sob demanda (code-splitting) para o bundle
+// inicial ficar leve — importante no celular. Login fica eager
+// pois é a primeira tela.
+const HomeAdmin = lazy(() => import("./pages/admin/HomeAdmin"));
+const GerenciarObras = lazy(() => import("./pages/admin/GerenciarObras"));
+const GerenciarColaboradores = lazy(() => import("./pages/admin/GerenciarColaboradores"));
+const ObrasEncarregado = lazy(() => import("./pages/admin/ObrasEncarregado"));
+const ConsultaRDO = lazy(() => import("./pages/admin/ConsultaRDO"));
+const SelecionarObraRDO = lazy(() => import("./pages/admin/SelecionarObraRDO"));
+const HomeEncarregado = lazy(() => import("./pages/encarregado/HomeEncarregado"));
+const FormRDO = lazy(() => import("./pages/encarregado/FormRDO"));
+const HomePintura = lazy(() => import("./pages/pintura/HomePintura"));
+const FormRDOPintura = lazy(() => import("./pages/pintura/FormRDOPintura"));
+const DetalheRDO = lazy(() => import("./pages/admin/DetalheRDO"));
+const RelatorioRDO = lazy(() => import("./pages/admin/RelatorioRDO"));
 
 
 /*
@@ -1227,6 +1236,26 @@ function Sistema() {
   }
 
 
+  // Fila offline: envia RDOs salvas sem internet assim que voltar
+  useEffect(() => {
+    if (!usuario) return;
+    async function sincronizar() {
+      if (lerFila().length === 0) return;
+      try {
+        const enviadas = await processarFila(supabase);
+        if (enviadas > 0) {
+          await carregarDados(usuario);
+        }
+      } catch (erro) {
+        console.error("Erro ao sincronizar fila offline:", erro);
+      }
+    }
+    sincronizar();
+    window.addEventListener("online", sincronizar);
+    return () => window.removeEventListener("online", sincronizar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuario]);
+
   /*
   ================================================
   NAVEGAÇÃO
@@ -1518,6 +1547,7 @@ function Sistema() {
       sair={sair}
     >
 
+      <Suspense fallback={<main><p>Carregando...</p></main>}>
       <Routes>
 
         {/* ======================================
@@ -1787,6 +1817,7 @@ function Sistema() {
         )}
 
       </Routes>
+      </Suspense>
 
     </LayoutSistema>
 

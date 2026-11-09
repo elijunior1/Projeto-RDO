@@ -8,17 +8,17 @@ export const CAMPOS_PRODUCAO_ENCARREGADO = [
   {
     campo: "instalacaoModulo",
     atividade: "instalacao_modulo",
-    label: "Instalação de Módulo",
+    label: "Instalação de módulo",
   },
   {
     campo: "instalacaoTerca",
     atividade: "instalacao_terca",
-    label: "Instalação de Terça",
+    label: "Instalação de terça",
   },
   {
     campo: "instalacaoTelha",
     atividade: "instalacao_telha",
-    label: "Instalação de Telha",
+    label: "Instalação de telha",
   },
 ];
 
@@ -34,9 +34,9 @@ export const ATIVIDADES_LABEL = {
   escavacao: "Escavação",
   concretagem: "Concretagem",
   acabamento: "Acabamento",
-  instalacao_modulo: "Instalação de Módulo",
-  instalacao_terca: "Instalação de Terça",
-  instalacao_telha: "Instalação de Telha",
+  instalacao_modulo: "Instalação de módulo",
+  instalacao_terca: "Instalação de terça",
+  instalacao_telha: "Instalação de telha",
   faixas: "Faixas",
   copinhos: "Copinhos",
   modulos: "Módulos",

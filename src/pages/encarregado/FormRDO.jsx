@@ -1536,7 +1536,7 @@ CARREGANDO
 
           <h2 className="rdo-titulo">
 
-            📊 Produção Diária
+            📊 Produção diária
 
           </h2>
 
@@ -1565,7 +1565,7 @@ CARREGANDO
 
           <h2 className="rdo-titulo">
 
-            👷 Controle de Efetivo
+            👷 Controle de efetivo
 
           </h2>
 
@@ -1747,7 +1747,7 @@ CARREGANDO
           <hr />
 
           <h2 className="rdo-titulo">
-            📦 Materiais Enviados
+            📦 Materiais enviados
           </h2>
 
           <div className="section-header">
@@ -1757,7 +1757,7 @@ CARREGANDO
               className="btn btn-primary"
               onClick={adicionarMaterial}
             >
-              + Adicionar Material
+              + Adicionar material
             </button>
 
           </div>
@@ -1844,7 +1844,7 @@ CARREGANDO
 
           <h2 className="rdo-titulo">
 
-            ⚠️ Motivo de Baixa Produtividade
+            ⚠️ Motivo de baixa produtividade
 
           </h2>
 

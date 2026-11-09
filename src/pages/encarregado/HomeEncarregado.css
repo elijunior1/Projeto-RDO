@@ -450,6 +450,44 @@
   }
 }
 
+/* ===== 2 cards por linha também no celular ===== */
+.obra-lista {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.obra-linha {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px;
+}
+
+.obra-linha-info h3 {
+  font-size: 0.95rem;
+  white-space: normal;
+}
+
+.obra-linha-info small {
+  white-space: normal;
+}
+
+.obra-linha-acao {
+  align-items: stretch;
+}
+
+.obra-linha-acao .status-pendente,
+.obra-linha-acao .status-enviado {
+  align-self: flex-start;
+}
+
+.btn-rdo {
+  width: 100%;
+  padding: 9px 10px;
+  font-size: 0.85rem;
+}
+
 /* ===== Redesign atrativo (mantém boas-vindas + progresso + lista) ===== */
 .encarregado-banner.compacto {
   background:

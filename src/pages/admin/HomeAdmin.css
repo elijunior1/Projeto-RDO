@@ -216,3 +216,30 @@
   color: #2563eb;
   margin-top: 2px;
 }
+
+.pendentes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.pendente-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #f59e0b;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.pendente-card h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.pendente-card p {
+  margin: 2px 0;
+  color: #475569;
+  font-size: 0.9rem;
+}

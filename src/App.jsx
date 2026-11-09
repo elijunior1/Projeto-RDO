@@ -28,6 +28,19 @@ import {
 
 import Login from "./pages/Login";
 
+// CSS de todas as telas carregado junto (evita FOUC: página sem
+// estilo enquanto o chunk JS carrega). O JS continua em split —
+// só o CSS (pequeno) vai para o bundle inicial.
+import "./pages/admin/HomeAdmin.css";
+import "./pages/admin/GerenciarObras.css";
+import "./pages/admin/GerenciarColaboradores.css";
+import "./pages/encarregado/HomeEncarregado.css";
+import "./pages/encarregado/FormRDO.css";
+import "./pages/admin/DetalhesRDO.css";
+import "./pages/admin/ConsultaRDO.css";
+import "./pages/admin/RelatorioRDO.css";
+import "./pages/admin/ObrasEncarregado.css";
+
 // Páginas carregadas sob demanda (code-splitting) para o bundle
 // inicial ficar leve — importante no celular. Login fica eager
 // pois é a primeira tela.

@@ -395,9 +395,9 @@ function HomeAdmin( {
               <h2>⚠️ RDOs pendentes de ontem</h2>
               <span>{pendentesHoje.length} pendência(s)</span>
             </div>
-            <div className="cards-grid">
+            <div className="pendentes-grid">
               {pendentesHoje.map((p, i) => (
-                <article className="card" key={`${p.obraId}-${p.encarregadoId}-${i}`}>
+                <article className="pendente-card" key={`${p.obraId}-${p.encarregadoId}-${i}`}>
                   <h3>🏗 {p.obraNome}</h3>
                   <p>👷 {p.encarregadoNome} · {p.tipo}</p>
                   <p>🔴 RDO não enviada ontem</p>

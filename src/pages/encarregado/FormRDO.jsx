@@ -1481,16 +1481,17 @@ CARREGANDO
           <div>
 
             <button
-              className="btn btn-ghost"
+              className="btn-voltar-rdo"
               onClick={voltar}
             >
-              ← Voltar
+              <span className="btn-voltar-rdo-icone">←</span>
+              Voltar
             </button>
 
 
             <h1>
 
-              Formulário RDO
+              📋 Formulário RDO
 
             </h1>
 
@@ -1505,7 +1506,7 @@ CARREGANDO
 
         </div>
 
-        <section className="form-card">
+        <section className="form-card rdo-form-novo">
 
           <div className="form-rdo-obra">
 
@@ -1533,9 +1534,9 @@ CARREGANDO
           <hr />
 
 
-          <h2>
+          <h2 className="rdo-titulo">
 
-            Produção Diária
+            📊 Produção Diária
 
           </h2>
 
@@ -1562,9 +1563,9 @@ CARREGANDO
           <hr />
 
 
-          <h2>
+          <h2 className="rdo-titulo">
 
-            Controle de Efetivo
+            👷 Controle de Efetivo
 
           </h2>
 
@@ -1614,7 +1615,7 @@ CARREGANDO
 
                           <div
 
-                            className="efetivo-item"
+                            className={`efetivo-item efetivo-${registro?.presenca || "pendente"}`}
 
                             key={
 
@@ -1745,8 +1746,8 @@ CARREGANDO
 
           <hr />
 
-          <h2>
-            Materiais Enviados
+          <h2 className="rdo-titulo">
+            📦 Materiais Enviados
           </h2>
 
           <div className="section-header">
@@ -1841,9 +1842,9 @@ CARREGANDO
           <hr />
 
 
-          <h2>
+          <h2 className="rdo-titulo">
 
-            Motivo de Baixa Produtividade
+            ⚠️ Motivo de Baixa Produtividade
 
           </h2>
 

@@ -449,3 +449,70 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ===== Redesign atrativo (mantém boas-vindas + progresso + lista) ===== */
+.encarregado-banner.compacto {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255,255,255,0.18), transparent 45%),
+    linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0ea5e9 100%);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.encarregado-banner.compacto h2 {
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.encarregado-banner.compacto p {
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+.progresso-dia.compacto {
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.progresso-dia.compacto .progresso-preenchido {
+  background: linear-gradient(90deg, #16a34a, #22c55e, #4ade80);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+}
+
+.busca-obras {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.busca-obras:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.obra-linha {
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid #2563eb;
+  padding: 14px 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.obra-linha:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+}
+
+.btn-rdo {
+  border-radius: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+}
+
+.btn-rdo:active {
+  transform: scale(0.97);
+}

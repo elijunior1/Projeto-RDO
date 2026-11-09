@@ -14,11 +14,46 @@ function AppLayout( {
   const [menuAberto,
     setMenuAberto] = useState(false);
 
+  const perfil = usuario?.perfil;
+
+  const ehPintura =
+    String(perfil || "").toLowerCase().includes("pintura") ||
+    String(perfil || "").toLowerCase().includes("pintor");
+
+  const titulo =
+    perfil === "admin"
+      ? "RDO Gestão"
+      : ehPintura
+        ? "Área da Pintura"
+        : "Área do Encarregado";
+
+  const subtitulo =
+    perfil === "admin"
+      ? "Painel administrativo"
+      : ehPintura
+        ? "Encarregado de pintura"
+        : "Encarregado de obra";
+
+  const icone =
+    perfil === "admin"
+      ? "📊"
+      : ehPintura
+        ? "🎨"
+        : "🏗️";
+
+  const iniciais =
+    (usuario?.nome || "?")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?";
+
   return (
     <div className="app-layout">
       <header className="app-header">
         <div className="header-left">
-          {usuario?.perfil === "admin" && (
+          {perfil === "admin" && (
 
             <button
               className="menu-toggle"
@@ -32,17 +67,32 @@ function AppLayout( {
             </button>
 
           )}
-          <h1>
-            RDO
-            <span>Gestão</span>
-          </h1>
+          <div className="header-brand">
+            <span className="header-brand-icone">
+              {icone}
+            </span>
+            <div className="header-brand-texto">
+              <h1>
+                {titulo}
+              </h1>
+              <small>
+                {subtitulo}
+              </small>
+            </div>
+          </div>
         </div>
         <div className="app-user">
-          <span>
+          <span className="header-avatar">
+            {iniciais}
+          </span>
+          <span className="header-nome">
             {usuario?.nome}
           </span>
-          <button onClick={sair}>
-            Sair
+          <button
+            className="btn-sair"
+            onClick={sair}
+          >
+            ⏻ Sair
           </button>
         </div>
       </header>
@@ -56,7 +106,7 @@ function AppLayout( {
       )}
 
       <div className="app-body">
-        {usuario?.perfil === "admin" && (
+        {perfil === "admin" && (
           <aside
             className={
             menuAberto

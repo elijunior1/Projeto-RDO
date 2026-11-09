@@ -327,3 +327,125 @@
 .encarregado-banner-icon {
   font-size: 3rem;
 }
+
+/* ===== Interface clean (mobile-first) ===== */
+.encarregado-banner.compacto {
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+}
+
+.encarregado-banner.compacto h2 {
+  font-size: 1.1rem;
+  margin: 0 0 4px;
+}
+
+.encarregado-banner.compacto p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.encarregado-banner.compacto .encarregado-banner-icon {
+  font-size: 1.6rem;
+}
+
+.alerta-offline {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.progresso-dia.compacto {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.progresso-dia.compacto .progresso-header {
+  margin-bottom: 6px;
+}
+
+.progresso-dia.compacto .progresso-barra {
+  height: 8px;
+}
+
+.busca-obras {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.obra-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.obra-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #2563eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.obra-linha-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.obra-linha-info h3 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.obra-linha-info small {
+  color: #64748b;
+  font-size: 0.8rem;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.obra-linha-acao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-rdo {
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.status-pendente,
+.status-enviado {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+}
+
+@media (min-width: 900px) {
+  .obra-lista {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}

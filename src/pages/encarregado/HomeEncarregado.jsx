@@ -174,57 +174,30 @@ function HomeEncarregado( {
 
   return (
     <>
-      <div className="page-header">
+      <div className="encarregado-banner compacto">
 
         <div>
-
-          <h1>
-            Minhas Obras
-          </h1>
-
+          <h2>
+            👋 {obterSaudacao()}, {usuario.nome}
+          </h2>
           <p>
-            Acompanhe suas obras e envie os RDOs diariamente.
+            {rdosPendentes} RDO(s) pendente(s) · {rdosEnviadasHoje}/{minhasObras.length} enviada(s) hoje
           </p>
+        </div>
 
+        <div className="encarregado-banner-icon">
+          🏗️
         </div>
 
       </div>
 
       {lerFila().length > 0 && (
-        <div style={{ background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+        <div className="alerta-offline">
           ⏳ {lerFila().length} RDO(s) salva(s) neste aparelho aguardando internet para envio.
         </div>
       )}
 
-      <div className="encarregado-banner">
-
-        <div className="encarregado-banner-content">
-
-          <div>
-
-            <h2>
-              👋 {obterSaudacao()}, {usuario.nome}
-            </h2>
-
-            <p>
-              {rdosPendentes} RDO(s) aguardando preenchimento.
-            </p>
-
-            <small>
-              {rdosEnviadasHoje} de {minhasObras.length} obra(s) concluída(s) hoje.
-            </small>
-
-          </div>
-
-          <div className="encarregado-banner-icon">
-            🏗️
-          </div>
-
-        </div>
-
-      </div>
-
-      <div className="progresso-dia">
+      <div className="progresso-dia compacto">
 
         <div className="progresso-header">
 
@@ -249,221 +222,108 @@ function HomeEncarregado( {
 
       </div>
 
-      <section className="dashboard-grid">
+      <div className="busca-obras">
 
-        <div className="dashboard-card">
+        <span className="busca-icone">
+          🔍
+        </span>
 
-          <div className="dashboard-icon">
-            🏗
-          </div>
+        <input
+        type="text"
+        placeholder="Buscar obra..."
+        value={buscaObra}
+        onChange={(event) =>
+        setBuscaObra(
+          event.target.value
+        )
+        }
+        />
 
-          <div>
+    </div>
 
-            <h3>Obras</h3>
+    {obrasFiltradas.length === 0 ? (
 
-            <div className="dashboard-number">
-              {minhasObras.length}
-            </div>
+      <div className="empty-state">
 
-          </div>
-
-        </div>
-
-        <div className="dashboard-card">
-
-          <div className="dashboard-icon">
-            📋
-          </div>
-
-          <div>
-
-            <h3>Enviadas</h3>
-
-            <div className="dashboard-number">
-              {rdosEnviadasHoje}
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="dashboard-card">
-
-          <div className="dashboard-icon">
-            ⚠️
-          </div>
-
-          <div>
-
-            <h3>Pendentes</h3>
-
-            <div className="dashboard-number">
-              {rdosPendentes}
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="dashboard-card">
-
-          <div className="dashboard-icon">
-            📈
-          </div>
-
-          <div>
-
-            <h3>Conclusão</h3>
-
-            <div className="dashboard-number">
-              {percentualConclusao}%
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <section className="section">
-
-        <div className="section-header">
-
-          <h2>
-            Obras em andamento
-          </h2>
-
-          <span>
-            {obrasFiltradas.length} obra(s)
-          </span>
-
-        </div>
-
-        <div className="busca-obras">
-
-          <span className="busca-icone">
-            🔍
-          </span>
-
-          <input
-          type="text"
-          placeholder="Buscar obra pelo nome..."
-          value={buscaObra}
-          onChange={(event) =>
-          setBuscaObra(
-            event.target.value
-          )
-          }
-          />
+        <p>
+          Nenhuma obra encontrada.
+        </p>
 
       </div>
 
-      {obrasFiltradas.length === 0 ? (
+    ): (
 
-        <div className="empty-state">
+      <div className="obra-lista">
 
-          <p>
-            Nenhuma obra encontrada.
-          </p>
+        {obrasFiltradas.map(
+          obra => {
 
-        </div>
+            const rdoEnviadaHoje =
+            obraTemRDOHoje(
+              obra.id
+            );
 
-      ): (
+            return (
 
-        <div className="cards-grid">
+              <article
+                className="obra-linha"
+                key={obra.id}
+                >
 
-          {obrasFiltradas.map(
-            obra => {
+                <div className="obra-linha-info">
 
-              const rdoEnviadaHoje =
-              obraTemRDOHoje(
-                obra.id
-              );
+                  <h3>{obra.nome_condominio}</h3>
 
-              return (
+                  <small>
+                    📍 {obra.endereco || ""}
+                    {obra.equipe ? ` · 👷 ${obra.equipe.nome}` : ""}
+                  </small>
 
-                <article
-                  className="card obra-card"
-                  key={obra.id}
-                  >
+                </div>
 
-                  <div className="obra-card-header">
+                <div className="obra-linha-acao">
 
-                    <div>
+                  <span
+                    className={
+                    rdoEnviadaHoje
+                    ? "status-enviado": "status-pendente"
+                    }
+                    >
+                    {rdoEnviadaHoje
+                    ? "🟢 Enviado": "🔴 Pendente"}
+                  </span>
 
-                      <h3>{obra.nome_condominio}</h3>
+                  {rdoEnviadaHoje ? (
 
-                    </div>
+                    <button
+                      className="btn btn-secondary btn-rdo"
+                      disabled
+                      >
+                      ✓ Enviada
+                    </button>
 
-                    <span
-                      className={
-                      rdoEnviadaHoje
-                      ? "status-enviado": "status-pendente"
+                  ): (
+
+                    <button
+                      className="btn btn-primary btn-rdo"
+                      onClick={() =>
+                      abrirFormulario(obra)
                       }
                       >
-                      {rdoEnviadaHoje
-                      ? "🟢 Enviado": "🔴 Pendente"}
-                    </span>
+                      Preencher RDO
+                    </button>
+                  )}
 
-                  </div>
+                </div>
 
-                  <div className="obra-info">
+              </article>
 
-                    <p>
-                      📍 {obra.endereco}
-                    </p>
+            );
+          }
+        )}
 
-                    <p>
-                      📅 {formatarData(
-                        obra.data_inicio
-                      )}
-                      {" até "}
-                      {formatarData(
-                        obra.data_finalizacao
-                      )}
-                    </p>
-
-                    {obra.equipe && (
-                      <p>
-                        👷 {obra.equipe.nome}
-                      </p>
-                    )}
-
-                  </div>
-
-                  <div className="card-actions">
-
-                    {rdoEnviadaHoje ? (
-
-                      <button
-                        className="btn btn-secondary"
-                        disabled
-                        >
-                        ✓ RDO enviada hoje
-                      </button>
-
-                    ): (
-
-                      <button
-                        className="btn btn-primary"
-                        onClick={() =>
-                        abrirFormulario(obra)
-                        }
-                        >
-                        Preencher RDO
-                      </button>
-                    )}
-                  </div>
-                </article>
-                
-              );
-            }
-          )}
-
-        </div>
-      )}
-
-    </section>
+      </div>
+    )}
 
   </>
 );

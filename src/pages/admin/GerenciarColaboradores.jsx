@@ -32,6 +32,11 @@ function GerenciarColaboradores({
   ] = useState([]);
 
   const [
+    encarregados,
+    setEncarregados
+  ] = useState([]);
+
+  const [
     carregando,
     setCarregando
   ] = useState(true);
@@ -95,6 +100,60 @@ function GerenciarColaboradores({
     buscaEquipe,
     setBuscaEquipe
   ] = useState("");
+
+  const [
+    buscaEncarregado,
+    setBuscaEncarregado
+  ] = useState("");
+
+  const [
+    mostrarFormularioEncarregado,
+    setMostrarFormularioEncarregado
+  ] = useState(false);
+
+  const [
+    nomeEncarregado,
+    setNomeEncarregado
+  ] = useState("");
+
+  const [
+    emailEncarregado,
+    setEmailEncarregado
+  ] = useState("");
+
+  const [
+    senhaEncarregado,
+    setSenhaEncarregado
+  ] = useState("");
+
+  const [
+    tipoEncarregado,
+    setTipoEncarregado
+  ] = useState("encarregado");
+
+  const [
+    ativoEncarregado,
+    setAtivoEncarregado
+  ] = useState(true);
+
+  const [
+    encarregadoEditando,
+    setEncarregadoEditando
+  ] = useState(null);
+
+  const [
+    salvandoEncarregado,
+    setSalvandoEncarregado
+  ] = useState(false);
+
+  function ehPintura(perfil) {
+    const p = String(perfil || "").toLowerCase().trim();
+    return p.includes("pintura") || p.includes("pintor");
+  }
+
+  function tipoParaPerfil(tipo) {
+    return tipo === "pintura" ? "pintura" : "encarregado";
+  }
 
   /*
 
@@ -234,6 +293,27 @@ CARREGAR DADOS DO SUPABASE
       setEquipes(
         equipesComColaboradores
       );
+
+      // ENCARREGADOS (ativos e inativos) — todos da tabela usuarios
+      const {
+        data: usuariosData,
+        error: usuariosError
+      } = await supabase
+        .from("usuarios")
+        .select("id, nome, email, perfil, ativo")
+        .order("nome", { ascending: true });
+
+      if (!usuariosError && usuariosData) {
+        const lista = (usuariosData || []).filter(u => {
+          const p = String(u.perfil || "").toLowerCase().trim();
+          return (
+            p.includes("encarregado") ||
+            p.includes("pintura") ||
+            p.includes("pintor")
+          );
+        });
+        setEncarregados(lista);
+      }
 
 
     } catch (
@@ -1313,6 +1393,147 @@ EXCLUIR EQUIPE
           )
     );
 
+  // ================= ENCARREGADOS (CRUD) =================
+  function limparFormularioEncarregado() {
+    setNomeEncarregado("");
+    setEmailEncarregado("");
+    setSenhaEncarregado("");
+    setTipoEncarregado("encarregado");
+    setAtivoEncarregado(true);
+    setEncarregadoEditando(null);
+  }
+
+  function editarEncarregado(enc) {
+    setEncarregadoEditando(enc);
+    setNomeEncarregado(enc.nome || "");
+    setEmailEncarregado(enc.email || "");
+    setSenhaEncarregado("");
+    setTipoEncarregado(ehPintura(enc.perfil) ? "pintura" : "encarregado");
+    setAtivoEncarregado(enc.ativo !== false);
+    setMostrarFormularioEncarregado(true);
+    setAbaAtual("encarregados");
+  }
+
+  async function salvarEncarregado(event) {
+    event.preventDefault();
+    if (!nomeEncarregado.trim() || !emailEncarregado.trim()) {
+      alert("Preencha nome e e-mail.");
+      return;
+    }
+    const perfil = tipoParaPerfil(tipoEncarregado);
+    try {
+      setSalvandoEncarregado(true);
+      if (encarregadoEditando) {
+        const { data, error } = await supabase
+          .from("usuarios")
+          .update({
+            nome: nomeEncarregado.trim(),
+            email: emailEncarregado.trim(),
+            perfil,
+            ativo: ativoEncarregado,
+          })
+          .eq("id", encarregadoEditando.id)
+          .select()
+          .single();
+        if (error) throw error;
+        setEncarregados(encarregados.map(e => (e.id === data.id ? data : e)));
+        alert("Encarregado atualizado com sucesso!");
+      } else {
+        if (!senhaEncarregado || senhaEncarregado.length < 6) {
+          alert("Informe uma senha de login com no mínimo 6 caracteres.");
+          setSalvandoEncarregado(false);
+          return;
+        }
+        const { data, error } = await supabase.functions.invoke("criar-encarregado", {
+          body: {
+            nome: nomeEncarregado.trim(),
+            email: emailEncarregado.trim(),
+            senha: senhaEncarregado,
+            perfil,
+            ativo: ativoEncarregado,
+          },
+        });
+        if (error) {
+          let detalhe = error.message;
+          try {
+            const texto = await error.context?.text?.();
+            if (texto) {
+              try {
+                const ctx = JSON.parse(texto);
+                detalhe = ctx?.error || texto;
+              } catch (ignorar) {
+                detalhe = texto;
+              }
+              if (error.context?.status) detalhe = `[HTTP ${error.context.status}] ${detalhe}`;
+            }
+          } catch (ignorar) {}
+          console.error("Edge Function criar-encarregado:", error, detalhe);
+          throw new Error(
+            `Não foi possível criar o login (${detalhe}). ` +
+            "Veja os logs: supabase functions logs criar-encarregado --tail"
+          );
+        }
+        if (!data?.perfil) {
+          throw new Error(data?.error || "Resposta inválida da Edge Function.");
+        }
+        setEncarregados([...encarregados, data.perfil].sort((a, b) => a.nome.localeCompare(b.nome)));
+        alert("Encarregado cadastrado com sucesso! Ele já pode logar com o e-mail e senha informados.");
+      }
+      limparFormularioEncarregado();
+      setMostrarFormularioEncarregado(false);
+    } catch (erro) {
+      console.error("Erro ao salvar encarregado:", erro);
+      alert(erro?.message || "Erro ao salvar encarregado. Rode supabase/gerenciar_encarregados.sql no Supabase.");
+    } finally {
+      setSalvandoEncarregado(false);
+    }
+  }
+
+  async function alternarAtivoEncarregado(enc) {
+    const novo = !(enc.ativo !== false);
+    const acao = novo ? "ativar" : "desativar";
+    if (!window.confirm(`Deseja ${acao} o perfil de ${enc.nome}?`)) return;
+    try {
+      const { data, error } = await supabase
+        .from("usuarios")
+        .update({ ativo: novo })
+        .eq("id", enc.id)
+        .select()
+        .single();
+      if (error) throw error;
+      setEncarregados(encarregados.map(e => (e.id === data.id ? data : e)));
+      alert(`Perfil ${novo ? "ativado" : "desativado"} com sucesso!`);
+    } catch (erro) {
+      console.error("Erro ao alternar ativo:", erro);
+      alert(erro?.message || "Erro ao alterar status.");
+    }
+  }
+
+  async function trocarTipoEncarregado(enc) {
+    const novoPerfil = ehPintura(enc.perfil) ? "encarregado" : "pintura";
+    const novoTipo = novoPerfil === "pintura" ? "Pintura" : "Obra";
+    if (!window.confirm(`Deseja mudar ${enc.nome} para o tipo ${novoTipo}?`)) return;
+    try {
+      const { data, error } = await supabase
+        .from("usuarios")
+        .update({ perfil: novoPerfil })
+        .eq("id", enc.id)
+        .select()
+        .single();
+      if (error) throw error;
+      setEncarregados(encarregados.map(e => (e.id === data.id ? data : e)));
+      alert(`Tipo alterado para ${novoTipo} com sucesso!`);
+    } catch (erro) {
+      console.error("Erro ao trocar tipo:", erro);
+      alert(erro?.message || "Erro ao trocar tipo.");
+    }
+  }
+
+  const encarregadosFiltrados = encarregados.filter(enc =>
+    (enc.nome || "").toLowerCase().includes(buscaEncarregado.toLowerCase()) ||
+    (enc.email || "").toLowerCase().includes(buscaEncarregado.toLowerCase())
+  );
+
   // TELA
   if (carregando) {
     return (
@@ -1347,12 +1568,12 @@ EXCLUIR EQUIPE
 
 
             <h1>
-              Colaboradores e Equipes
+              Colaboradores, Equipes e Encarregados
             </h1>
 
 
             <p>
-              Gerencie os colaboradores e as equipes das obras.
+              Gerencie os colaboradores, as equipes e os encarregados das obras.
             </p>
 
           </div>
@@ -1412,6 +1633,23 @@ EXCLUIR EQUIPE
 
             Equipes
 
+          </button>
+
+          <button
+            className={
+              abaAtual ===
+                "encarregados"
+                ? "tab active" : "tab"
+            }
+            onClick={() => {
+              setAbaAtual("encarregados");
+              setBuscaColaborador("");
+              setBuscaEquipe("");
+              setMostrarFormularioColaborador(false);
+              setMostrarFormularioEquipe(false);
+            }}
+          >
+            Encarregados {encarregados.length ? `(${encarregados.length})` : ""}
           </button>
 
         </div>
@@ -2106,6 +2344,176 @@ EXCLUIR EQUIPE
             </>
 
           )}
+
+        {abaAtual === "encarregados" && (
+          <>
+            <div className="page-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  if (mostrarFormularioEncarregado) {
+                    limparFormularioEncarregado();
+                  }
+                  setMostrarFormularioEncarregado(!mostrarFormularioEncarregado);
+                }}
+              >
+                {mostrarFormularioEncarregado ? "Fechar" : "+ Novo Encarregado"}
+              </button>
+            </div>
+
+            {mostrarFormularioEncarregado && (
+              <form className="form-card" onSubmit={salvarEncarregado}>
+                <h2>{encarregadoEditando ? "Editar Encarregado" : "Novo Encarregado"}</h2>
+
+                <div className="form-group">
+                  <label>Nome completo</label>
+                  <input
+                    type="text"
+                    value={nomeEncarregado}
+                    onChange={(e) => setNomeEncarregado(e.target.value)}
+                    placeholder="Digite o nome"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>E-mail</label>
+                  <input
+                    type="email"
+                    value={emailEncarregado}
+                    onChange={(e) => setEmailEncarregado(e.target.value)}
+                    placeholder="email@exemplo.com"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Tipo de encarregado</label>
+                  <select
+                    value={tipoEncarregado}
+                    onChange={(e) => setTipoEncarregado(e.target.value)}
+                  >
+                    <option value="encarregado">🏗 Encarregado de Obra</option>
+                    <option value="pintura">🎨 Encarregado de Pintura</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={ativoEncarregado}
+                      onChange={(e) => setAtivoEncarregado(e.target.checked)}
+                      style={{ width: "auto", minHeight: "auto", marginRight: 8 }}
+                    />
+                    Perfil ativo
+                  </label>
+                </div>
+
+                {!encarregadoEditando && (
+                  <div className="form-group">
+                    <label>Senha de login (mín. 6 caracteres)</label>
+                    <input
+                      type="password"
+                      value={senhaEncarregado}
+                      onChange={(e) => setSenhaEncarregado(e.target.value)}
+                      placeholder="Senha que ele usará para logar"
+                      required
+                      minLength={6}
+                    />
+                    <p style={{ color: "#64748b", fontSize: 13, marginTop: 6 }}>
+                      Ao salvar, o sistema cria o login e o perfil automaticamente (sem precisar copiar UUID).
+                      Informe essa senha ao encarregado.
+                    </p>
+                  </div>
+                )}
+
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      limparFormularioEncarregado();
+                      setMostrarFormularioEncarregado(false);
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={salvandoEncarregado}
+                  >
+                    {salvandoEncarregado ? "Salvando..." : encarregadoEditando ? "Salvar Alterações" : "Cadastrar"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <br />
+            <p>Filtro de busca</p>
+            <div className="form-group">
+              <input
+                type="text"
+                placeholder="Buscar encarregado..."
+                value={buscaEncarregado}
+                onChange={(e) => setBuscaEncarregado(e.target.value)}
+              />
+            </div>
+
+            <section className="section">
+              <div className="section-header">
+                <h2>Encarregados cadastrados</h2>
+                <span>
+                  {encarregadosFiltrados.length} encarregado(s)
+                </span>
+              </div>
+
+              {encarregadosFiltrados.length === 0 ? (
+                <div className="empty-state">
+                  <p>Nenhum encarregado encontrado.</p>
+                </div>
+              ) : (
+                <div className="cards-grid">
+                  {encarregadosFiltrados.map((enc) => {
+                    const pintura = ehPintura(enc.perfil);
+                    const ativo = enc.ativo !== false;
+                    return (
+                      <article className="card" key={enc.id}>
+                        <h3>{enc.nome}</h3>
+                        <p>{enc.email || "Sem e-mail"}</p>
+                        <p>
+                          Tipo: {pintura ? "🎨 Pintura" : "🏗 Obra"} · Perfil: {enc.perfil || "-"}
+                        </p>
+                        <p>Status: {ativo ? "🟢 Ativo" : "🔴 Inativo"}</p>
+                        <div className="card-actions">
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => editarEncarregado(enc)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className={ativo ? "btn btn-danger" : "btn btn-success"}
+                            onClick={() => alternarAtivoEncarregado(enc)}
+                          >
+                            {ativo ? "Desativar" : "Ativar"}
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => trocarTipoEncarregado(enc)}
+                          >
+                            {pintura ? "Mudar para Obra" : "Mudar para Pintura"}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </>
+        )}
 
       </main>
 

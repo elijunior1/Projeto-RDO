@@ -28,3 +28,6 @@ dev-dist
 *.sln
 *.sw?
 supabase/hardening_rls.sql
+supabase/.temp
+supabase/.branches
+supabase/.worktrees

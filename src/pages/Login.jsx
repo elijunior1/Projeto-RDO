@@ -25,6 +25,8 @@ function Login({ aoEntrar }) {
       return;
     }
 
+    // O bloqueio de usuário desativado fica no App (carregarUsuario),
+    // que mostra um pop-up sem nunca abrir o sistema.
     if (data.user) {
       aoEntrar(data.user);
     }

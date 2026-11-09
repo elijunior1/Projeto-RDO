@@ -205,6 +205,13 @@ function Sistema() {
     setRdos
   ] = useState([]);
 
+  // Mensagem de bloqueio (usuário desativado) exibida em pop-up
+  // sobre a tela de login, sem nunca abrir o sistema.
+  const [
+    mensagemBloqueio,
+    setMensagemBloqueio
+  ] = useState("");
+
 
   /*
   ================================================
@@ -822,6 +829,23 @@ function Sistema() {
 
     }
 
+    // Usuário desativado não entra (mesmo com sessão válida).
+    // Mostra pop-up sobre o login, sem nunca abrir o sistema.
+    if (data.ativo === false) {
+      usuarioIdCarregadoRef.current = null;
+      setUsuario(null);
+      setObras([]);
+      setColaboradores([]);
+      setEquipes([]);
+      setRdos([]);
+      setMensagemBloqueio(
+        "Seu usuário foi bloqueado/desativado. Consulte um administrador."
+      );
+      await supabase.auth.signOut();
+      return;
+    }
+
+    setMensagemBloqueio("");
 
     const usuarioCompleto = {
 
@@ -1376,6 +1400,52 @@ function Sistema() {
 
     return (
 
+      <>
+      {mensagemBloqueio && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Usuário bloqueado"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(15, 23, 42, 0.55)",
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 12,
+              padding: 28,
+              maxWidth: 420,
+              width: "100%",
+              textAlign: "center",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+            }}
+          >
+            <div style={{ fontSize: 42, marginBottom: 10 }}>⛔</div>
+            <h2 style={{ margin: "0 0 10px", color: "#1e293b" }}>
+              Usuário bloqueado
+            </h2>
+            <p style={{ color: "#475569", margin: "0 0 20px", lineHeight: 1.5 }}>
+              {mensagemBloqueio}
+            </p>
+            <button
+              className="btn btn-primary"
+              style={{ width: "100%" }}
+              onClick={() => setMensagemBloqueio("")}
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+
       <Routes>
 
         <Route
@@ -1400,6 +1470,8 @@ function Sistema() {
         />
 
       </Routes>
+
+      </>
 
     );
 

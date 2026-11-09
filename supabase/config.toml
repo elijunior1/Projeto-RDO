@@ -1,0 +1,3 @@
+# Config do Supabase CLI.
+# Rode `supabase link --project-ref ebdfkjyscuwpmqjqxrzz` na pasta do projeto
+# e ele vai preencher o project_id automaticamente.

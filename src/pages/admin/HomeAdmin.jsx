@@ -9,7 +9,13 @@ function HomeAdmin({ usuario, navegar, setEncarregadoSelecionado }) {
 
   const [obrasEmAndamento, setObrasEmAndamento] = useState(0);
 
+  // Nomes das obras em andamento (exibidos na lista do card)
+  const [listaObrasEmAndamento, setListaObrasEmAndamento] = useState([]);
+
   const [obrasPausadas, setObrasPausadas] = useState(0);
+
+  // Nomes das obras pausadas (exibidos na lista do card)
+  const [listaObrasPausadas, setListaObrasPausadas] = useState([]);
 
   const [rdosHoje, setRdosHoje] = useState(0);
 
@@ -67,7 +73,11 @@ function HomeAdmin({ usuario, navegar, setEncarregadoSelecionado }) {
 
     setObrasEmAndamento(emAndamento.length);
 
+    setListaObrasEmAndamento(emAndamento);
+
     setObrasPausadas(pausadas.length);
+
+    setListaObrasPausadas(pausadas);
 
     if (!erroRdos) {
       setRdosHoje((rdos || []).filter((r) => r.data === hoje).length);
@@ -225,28 +235,40 @@ function HomeAdmin({ usuario, navegar, setEncarregadoSelecionado }) {
       </div>
       <main className="admin-container">
         <section className="dashboard-grid">
-          <div className="dashboard-card">
+          <div className="dashboard-card dashboard-card-lista">
             <div className="dashboard-icon">🏗</div>
 
             <span className="dashboard-label">Obras em andamento</span>
 
-            <div className="dashboard-number">{obrasEmAndamento}</div>
+            <div className="obras-lista">
+              {listaObrasEmAndamento.length > 0 ? (
+                listaObrasEmAndamento.map((obra) => (
+                  <span key={obra.id} className="lista-item">
+                    {obra.nome_condominio}
+                  </span>
+                ))
+              ) : (
+                <span className="lista-vazia">Nenhuma obra em andamento</span>
+              )}
+            </div>
           </div>
 
-          <div className="dashboard-card">
+          <div className="dashboard-card dashboard-card-lista">
             <div className="dashboard-icon">⏸️</div>
 
             <span className="dashboard-label">Obras pausadas</span>
 
-            <div className="dashboard-number">{obrasPausadas}</div>
-          </div>
-
-          <div className="dashboard-card">
-            <div className="dashboard-icon">📋</div>
-
-            <span className="dashboard-label">RDOs hoje</span>
-
-            <div className="dashboard-number">{rdosHoje}</div>
+            <div className="obras-lista">
+              {listaObrasPausadas.length > 0 ? (
+                listaObrasPausadas.map((obra) => (
+                  <span key={obra.id} className="lista-item">
+                    {obra.nome_condominio}
+                  </span>
+                ))
+              ) : (
+                <span className="lista-vazia">Sem obras pausadas</span>
+              )}
+            </div>
           </div>
 
           <div className="dashboard-card">

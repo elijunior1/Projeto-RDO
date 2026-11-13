@@ -4,7 +4,7 @@ import { supabase } from "../../supabase.js";
 
 import "./GerenciarColaboradores.css";
 
-function GerenciarColaboradores({ navegar }) {
+function GerenciarColaboradores({ usuario }) {
   const [abaAtual, setAbaAtual] = useState("colaboradores");
 
   const [colaboradores, setColaboradores] = useState([]);
@@ -71,6 +71,27 @@ function GerenciarColaboradores({ navegar }) {
   function tipoParaPerfil(tipo) {
     return tipo === "pintura" ? "pintura" : "encarregado";
   }
+
+  function obterSaudacao() {
+    const hora = new Date().getHours();
+
+    if (hora < 12) {
+      return "Bom dia";
+    }
+
+    if (hora < 18) {
+      return "Boa tarde";
+    }
+
+    return "Boa noite";
+  }
+
+  const dataHojeTexto = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 
   /*
 
@@ -830,18 +851,18 @@ EXCLUIR EQUIPE
   return (
     <div className="app-layout">
       <main className="app-content">
-        <div className="page-header">
+        <div className="admin-resumo-topo">
           <div>
-            <button className="btn btn-ghost" onClick={() => navegar("home")}>
-              ← Voltar
-            </button>
-
-            <h1>Colaboradores, Equipes e Encarregados</h1>
-
-            <p>
-              Gerencie os colaboradores, as equipes e os encarregados das obras.
-            </p>
+            <h2>
+              👋 {obterSaudacao()}, {usuario?.nome}
+            </h2>
+            <small>Visão geral · {dataHojeTexto}</small>
           </div>
+          <span className="admin-resumo-badge">
+            {colaboradores.length} colaborador(es)&nbsp;·&nbsp;
+            {equipes.length} equipe(s)&nbsp;·&nbsp;
+            {encarregados.length} encarregado(s)
+          </span>
         </div>
 
         <div className="tabs">
@@ -879,7 +900,7 @@ EXCLUIR EQUIPE
               setMostrarFormularioEquipe(false);
             }}
           >
-            Encarregados {encarregados.length ? `(${encarregados.length})` : ""}
+            Encarregados
           </button>
         </div>
 
@@ -887,7 +908,7 @@ EXCLUIR EQUIPE
           <>
             <div className="page-actions">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-nova-obra"
                 onClick={() =>
                   setMostrarFormularioColaborador(!mostrarFormularioColaborador)
                 }
@@ -962,15 +983,16 @@ EXCLUIR EQUIPE
             )}
 
             <br />
-            <p>Filtro de busca</p>
-
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Buscar colaborador..."
-                value={buscaColaborador}
-                onChange={(event) => setBuscaColaborador(event.target.value)}
-              />
+            <div className="busca-wrapper">
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="busca-input"
+                  placeholder="Buscar colaborador..."
+                  value={buscaColaborador}
+                  onChange={(event) => setBuscaColaborador(event.target.value)}
+                />
+              </div>
             </div>
 
             <section className="section">
@@ -1024,7 +1046,7 @@ EXCLUIR EQUIPE
           <>
             <div className="page-actions">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-nova-obra"
                 onClick={() => {
                   if (mostrarFormularioEquipe) {
                     setNomeEquipe("");
@@ -1136,14 +1158,16 @@ EXCLUIR EQUIPE
             )}
 
             <br />
-            <p>Buscador de equipes</p>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Buscar equipe..."
-                value={buscaEquipe}
-                onChange={(event) => setBuscaEquipe(event.target.value)}
-              />
+            <div className="busca-wrapper">
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="busca-input"
+                  placeholder="Buscar equipe..."
+                  value={buscaEquipe}
+                  onChange={(event) => setBuscaEquipe(event.target.value)}
+                />
+              </div>
             </div>
 
             <section className="section">
@@ -1202,7 +1226,7 @@ EXCLUIR EQUIPE
           <>
             <div className="page-actions">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-nova-obra"
                 onClick={() => {
                   if (mostrarFormularioEncarregado) {
                     limparFormularioEncarregado();
@@ -1212,7 +1236,9 @@ EXCLUIR EQUIPE
                   );
                 }}
               >
-                {mostrarFormularioEncarregado ? "Fechar" : "+ Novo Encarregado"}
+                {mostrarFormularioEncarregado
+                  ? "Fechar"
+                  : "+ Novo Encarregado"}
               </button>
             </div>
 
@@ -1319,14 +1345,16 @@ EXCLUIR EQUIPE
             )}
 
             <br />
-            <p>Filtro de busca</p>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Buscar encarregado..."
-                value={buscaEncarregado}
-                onChange={(e) => setBuscaEncarregado(e.target.value)}
-              />
+            <div className="busca-wrapper">
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="busca-input"
+                  placeholder="Buscar encarregado..."
+                  value={buscaEncarregado}
+                  onChange={(e) => setBuscaEncarregado(e.target.value)}
+                />
+              </div>
             </div>
 
             <section className="section">

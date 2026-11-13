@@ -542,6 +542,37 @@
 }
 
 /* =========================================================
+   BUSCA CENTRALIZADA (colaboradores, equipes, encarregados)
+   ========================================================= */
+
+.busca-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+input.busca-input {
+  width: 100%;
+  max-width: 700px;
+  height: 52px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0 20px 0 50px;
+  font-size: 16px;
+  background: #ffffff
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>")
+    no-repeat 18px center;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  outline: none;
+}
+
+input.busca-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
    RESPONSIVIDADE
    ========================================================= */
 

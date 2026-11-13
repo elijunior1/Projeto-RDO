@@ -2,6 +2,8 @@ import {
   useState
 } from "react";
 
+import logoAcodez from "../assets/logo-acodez.png";
+
 import "./AppLayout.css";
 
 function AppLayout( {
@@ -68,9 +70,11 @@ function AppLayout( {
 
           )}
           <div className="header-brand">
-            <span className="header-brand-icone">
-              {icone}
-            </span>
+            <img
+              className="header-brand-icone"
+              src={logoAcodez}
+              alt="Logo Acodez"
+            />
             <div className="header-brand-texto">
               <h1>
                 {titulo}

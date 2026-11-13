@@ -1,0 +1,52 @@
+/* ===== Grade de obras (5 por linha) - Selecionar RDO ===== */
+.obras-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 1100px) {
+  .obras-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .obras-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .obras-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Campo de busca centralizado */
+.form-group {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.form-group input {
+  width: 100%;
+  max-width: 480px;
+  height: 46px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0 18px 0 44px;
+  font-size: 15px;
+  background: #ffffff
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>")
+    no-repeat 14px center;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  outline: none;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}

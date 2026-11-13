@@ -1,15 +1,138 @@
 .page-header-rdo {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 24px;
+  width: 100%;
+}
+
+/* Título e descrição dentro do card azul gradiente (padrão Obras) */
+
+.page-header-rdo .gerenciar-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-header-rdo .page-title h1 {
+  margin: 0 0 4px;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.page-header-rdo .page-title p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.95rem;
+}
+
+.btn-voltar {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-voltar:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+/* RESUMO - Linha única de 5 cards centralizados */
+
+.obras-resumo-section {
+  width: 100% !important;
+  margin-bottom: 20px !important;
+}
+
+.obras-resumo {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  justify-content: center !important;
+  width: max-content !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.obras-resumo::-webkit-scrollbar {
+  height: 6px;
+}
+
+.obras-resumo::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.resumo-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 14px 10px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 100px !important;
+  justify-content: center !important;
+  min-width: 160px !important;
+  flex: 0 0 auto !important;
+  max-width: 200px !important;
+}
+
+.resumo-card .resumo-icon {
+  font-size: 24px !important;
+}
+
+.resumo-card span {
+  display: block !important;
+  font-size: 12px !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+.resumo-card strong {
+  display: block !important;
+  font-size: 22px !important;
+  color: #1e293b !important;
+  margin-top: 2px !important;
+  line-height: 1 !important;
 }
 
 .obras-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .obras-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .obras-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* MODAL */
@@ -18,11 +141,9 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   padding: 16px;
   z-index: 999;
 }
@@ -30,14 +151,10 @@
 .modal-card {
   width: min(900px, 100%);
   max-height: calc(100vh - 40px);
-
   overflow-y: auto;
-
   background: #fff;
   border-radius: 20px;
-
   padding: 24px;
-
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
 
@@ -52,44 +169,6 @@
 .header-actions {
   display: flex;
   gap: 8px;
-}
-
-/* RESUMO */
-
-.rdo-stats {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.rdo-stat-card {
-  flex: 1;
-
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-
-  padding: 10px;
-
-  text-align: center;
-
-  min-height: 75px;
-  max-height: 90px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.rdo-stat-card span {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.rdo-stat-card strong {
-  font-size: 22px;
-  margin-top: 4px;
-  color: #1e293b;
 }
 
 /* SEÇÕES */
@@ -128,10 +207,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   background: #f8fafc;
   border: 1px solid #e5e7eb;
-
   padding: 12px;
   border-radius: 12px;
 }
@@ -148,11 +225,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   padding: 12px;
-
   border-radius: 12px;
-
   background: #f8fafc;
   border: 1px solid #e5e7eb;
 }
@@ -179,10 +253,8 @@
 .observacoes-box {
   background: #f8fafc;
   border: 1px solid #e5e7eb;
-
   padding: 16px;
   border-radius: 12px;
-
   line-height: 1.6;
 }
 
@@ -209,10 +281,6 @@
 /* MOBILE */
 
 @media (max-width: 768px) {
-  .obras-grid {
-    grid-template-columns: 1fr;
-  }
-
   .modal-card {
     padding: 16px;
   }
@@ -255,7 +323,6 @@
     width: 100%;
     max-height: none;
     min-height: calc(100vh - 20px);
-
     border-radius: 16px;
     padding: 16px;
   }

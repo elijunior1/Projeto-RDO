@@ -35,8 +35,15 @@
   height: 42px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.18);
-  font-size: 1.3rem;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.header-brand-icone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .header-brand-texto h1 {

@@ -4,7 +4,7 @@ import { supabase } from "../../supabase.js";
 
 import "./GerenciarObras.css";
 
-function GerenciarObras() {
+function GerenciarObras({ usuario }) {
   const [obras, setObras] = useState([]);
 
   const [equipes, setEquipes] = useState([]);
@@ -694,6 +694,27 @@ FORMATAR DATA
     return `${dia}/${mes}/${ano}`;
   }
 
+  function obterSaudacao() {
+    const hora = new Date().getHours();
+
+    if (hora < 12) {
+      return "Bom dia";
+    }
+
+    if (hora < 18) {
+      return "Boa tarde";
+    }
+
+    return "Boa noite";
+  }
+
+  const dataHojeTexto = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
   /*
 TELA
 */
@@ -708,60 +729,71 @@ TELA
   }
 
   return (
-    <main className="app-content">
-      <div className="page-header">
-        <div className="resumo-geral-card">
-          <div className="obras-resumo">
-            <div className="resumo-card">
-              <span>Total</span>
-              <strong>{obras.length}</strong>
-            </div>
-            <div className="resumo-card">
-              <span>Em andamento</span>
-              <strong>
-                {obras.filter((obra) => obra.status === "em_andamento").length}
-              </strong>
-            </div>
-            <div className="resumo-card">
-              <span>Paralisadas</span>
-              <strong>
-                {obras.filter((obra) => obra.status === "paralisada").length}
-              </strong>
-            </div>
-            <div className="resumo-card">
-              <span>Finalizadas</span>
-              <strong>
-                {obras.filter((obra) => obra.status === "finalizada").length}
-              </strong>
-            </div>
-          </div>
+    <main className="admin-container">
+      <div className="admin-resumo-topo">
+        <div>
+          <h2>
+            👋 {obterSaudacao()}, {usuario?.nome}
+          </h2>
+          <small>Visão geral · {dataHojeTexto}</small>
         </div>
-        <div className="gerenciar-card">
-          <div className="page-title">
-            <h1>Gerenciar obras</h1>
-            <p>Cadastre e acompanhe as obras do sistema.</p>
-          </div>
-          <div className="resumo-lateral">
-            <strong>
-              {obras.filter((obra) => obra.status === "em_andamento").length}/
-              {obras.filter((obra) => obra.status !== "finalizada").length}
-            </strong>
-            <span>obras em andamento de obras ativas</span>
+        <span className="admin-resumo-badge">
+          {obras.filter((obra) => obra.status === "em_andamento").length} obra(s) ativa(s)&nbsp;·&nbsp;
+          {obras.length} obra(s) no total
+        </span>
+      </div>
+
+      <section className="dashboard-grid">
+        <div className="dashboard-card">
+          <div className="dashboard-icon">🏗</div>
+
+          <span className="dashboard-label">Total de obras</span>
+
+          <div className="dashboard-number">{obras.length}</div>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-icon">🔧</div>
+
+          <span className="dashboard-label">Em andamento</span>
+
+          <div className="dashboard-number">
+            {obras.filter((obra) => obra.status === "em_andamento").length}
           </div>
         </div>
 
-        <button
-          className="btn btn-primary btn-nova-obra"
-          onClick={() => {
-            if (mostrarFormulario) {
-              limparFormulario();
-            }
-            setMostrarFormulario(!mostrarFormulario);
-          }}
-        >
-          {mostrarFormulario ? "✖ Fechar Formulário" : "➕ Nova Obra"}
-        </button>
-      </div>
+        <div className="dashboard-card">
+          <div className="dashboard-icon">⏸️</div>
+
+          <span className="dashboard-label">Paralisadas</span>
+
+          <div className="dashboard-number">
+            {obras.filter((obra) => obra.status === "paralisada").length}
+          </div>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-icon">✅</div>
+
+          <span className="dashboard-label">Finalizadas</span>
+
+          <div className="dashboard-number">
+            {obras.filter((obra) => obra.status === "finalizada").length}
+          </div>
+        </div>
+      </section>
+
+      <button
+        className="btn btn-primary btn-nova-obra"
+        onClick={() => {
+          if (mostrarFormulario) {
+            limparFormulario();
+          }
+          setMostrarFormulario(!mostrarFormulario);
+        }}
+      >
+        {mostrarFormulario ? "✖ Fechar Formulário" : "➕ Nova Obra"}
+      </button>
       {mostrarFormulario && (
         <form className="form-card form-group-full" onSubmit={cadastrarObra}>
           <h2>{obraEditando ? "Editar Obra" : "Nova Obra"}</h2>

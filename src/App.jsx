@@ -29,6 +29,7 @@ import "./pages/admin/DetalhesRDO.css";
 import "./pages/admin/ConsultaRDO.css";
 import "./pages/admin/RelatorioRDO.css";
 import "./pages/admin/ObrasEncarregado.css";
+import "./pages/admin/SelecionarObraRDO.css";
 
 // Páginas carregadas sob demanda (code-splitting) para o bundle
 // inicial ficar leve — importante no celular. Login fica eager
@@ -994,13 +995,13 @@ function Sistema() {
 
                 <Route
                   path="/admin/obras"
-                  element={<GerenciarObras navegar={navegar} sair={sair} />}
+                  element={<GerenciarObras navegar={navegar} sair={sair} usuario={usuario} />}
                 />
 
                 <Route
                   path="/admin/colaboradores"
                   element={
-                    <GerenciarColaboradores navegar={navegar} sair={sair} />
+                    <GerenciarColaboradores sair={sair} usuario={usuario} />
                   }
                 />
 
@@ -1059,6 +1060,7 @@ function Sistema() {
                       obras={obras}
                       navegar={navegar}
                       setObraSelecionada={setObraSelecionada}
+                      usuario={usuario}
                     />
                   }
                 />
